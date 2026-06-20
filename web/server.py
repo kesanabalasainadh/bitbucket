@@ -33,7 +33,8 @@ if (_REPO / "verdict" / "__init__.py").exists():
 
 HERE = Path(__file__).resolve().parent
 STATIC = HERE / "static"
-DATA = HERE / "data" / "verdict.json"
+# data/ is gitignored (runtime), static/ copy is the committed fallback for a fresh clone.
+DATA_CANDIDATES = [HERE / "data" / "verdict.json", STATIC / "verdict.json"]
 
 app = Flask(__name__, static_folder=str(STATIC))
 app.config["JSON_SORT_KEYS"] = False
@@ -42,8 +43,9 @@ if CORS:
 
 
 def _cached_payload() -> dict:
-    if DATA.exists():
-        return json.loads(DATA.read_text(encoding="utf-8"))
+    for p in DATA_CANDIDATES:
+        if p.exists():
+            return json.loads(p.read_text(encoding="utf-8"))
     return {"error": "no cached payload; run python web/build_data.py"}
 
 
@@ -62,13 +64,14 @@ def api_verdict():
     """Run the engine live; fall back to the committed deterministic payload."""
     try:
         from web.build_data import (regime_grid, two_sided, walkforward_windows,
-                                     live_cmc, sentiment_block)
+                                     live_cmc, sentiment_block, onchain_identity)
         from verdict.core.costs import PANCAKESWAP_V2
         trade_block, notrade_block = two_sided()
         payload = {
             "tests": "122 passed, 2 skipped",
             "cost_model": PANCAKESWAP_V2.label,
             "live_cmc": live_cmc(),
+            "onchain": onchain_identity(),
             "sentiment": sentiment_block(),
             "regime_grid": regime_grid(),
             "walkforward": walkforward_windows(),

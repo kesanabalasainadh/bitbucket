@@ -187,6 +187,15 @@ def sentiment_block():
         return {"error": str(e)[:120]}
 
 
+def onchain_identity():
+    """VERDICT's committed on-chain ERC-8004 identity proof (BNB AI Agent SDK)."""
+    try:
+        from verdict.identity.register import load_proof
+        return load_proof() or {}
+    except Exception:
+        return {}
+
+
 def live_cmc():
     """Real live CMC snapshot if a key is present; else the offline fixture signal."""
     try:
@@ -219,6 +228,7 @@ def main():
             ],
         },
         "live_cmc": live_cmc(),
+        "onchain": onchain_identity(),
         "sentiment": sentiment_block(),
         "regime_grid": regime_grid(),
         "walkforward": walkforward_windows(),

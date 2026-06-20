@@ -134,6 +134,16 @@ function render(d) {
     $("#cmc-reaction").innerHTML = `Engine response → balanced parameters; no regime tightening on this snapshot.`;
   }
 
+  // on-chain identity (BNB AI Agent SDK)
+  const oc = d.onchain || {};
+  if (oc.agent_id) {
+    $("#onchain-id").textContent = oc.agent_id;
+    const link = $("#onchain-link");
+    if (link && oc.explorer_tx) link.href = oc.explorer_tx;
+  } else {
+    const foot = $("#onchain-foot"); if (foot) foot.textContent = "ERC-8004 identity — run python -m verdict.identity.register";
+  }
+
   // sentiment + decision matrix
   renderSentiment(d.sentiment || {});
 

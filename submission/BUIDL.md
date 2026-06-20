@@ -134,13 +134,25 @@ any results were seen (auditable in `verdict/core/select.py`):
 Among passers, the highest `risk_score` wins; if none pass, `NO_TRADE`. No RNG, no clock, no network in
 the backtest — identical inputs give identical specs.
 
+## On-chain agent identity (BNB AI Agent SDK)
+
+VERDICT is a **registered on-chain agent**. Using the **BNB AI Agent SDK** (`bnbagent`) we minted an
+**ERC-8004 agent identity** on BNB Smart Chain testnet — gas-free via the MegaFuel paymaster — so the
+strategy engine has a verifiable, discoverable on-chain identity (real on-chain proof, not cosmetic):
+
+- **agentId `1466`** · registry `0x8004a818…` · wallet `0x519556…`
+- tx: <https://testnet.bscscan.com/tx/0x1d4ba443f72b84ce47e991bb7a00721acfe5b3d3518a506adfe63ea2430be8b4>
+- reproduce: `python -m verdict.identity.register` (`verdict/identity/`, proof in `submission/onchain_identity.json`)
+
+This targets the **"Best Use of BNB AI Agent SDK"** special prize, stackable with a Track-2 placement.
+
 ## Track 1 (stretch — agent layer scaffolded, live execution is future work)
 
-The same `StrategySpec` is *designed* to feed a future BSC agent. What exists today: an explainable
+The same `StrategySpec` is *designed* to feed a future BSC trading agent. What exists today: an explainable
 decision matrix (`verdict/core/matrix.py` — TRADE/WAIT/DCA/NO_TRADE), a hard-drawdown **kill-switch**
 (`verdict/safety/kill_switch.py`), and a sentiment-aware **DCA agent** (`verdict/agent/dca.py`) with
 **zero execution authority** — it explains, it never signs. There is **no** Trust Wallet signing or
-PancakeSwap execution in this codebase yet (`verdict/execution/` is an empty placeholder). Track 2 ships
+PancakeSwap *execution* in this codebase yet (`verdict/execution/` is an empty placeholder). Track 2 ships
 first and stands on its own.
 
 ## Tech & sponsor stack

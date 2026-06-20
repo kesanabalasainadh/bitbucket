@@ -1,0 +1,13 @@
+{
+  "agent": "verdict-strategy",
+  "network": "bsc-testnet",
+  "chain_id": 97,
+  "standard": "ERC-8004 (agent identity)",
+  "sdk": "BNB AI Agent SDK (bnbagent)",
+  "agent_id": 1466,
+  "wallet": "0x519556511047cB06eff0060899Fd9A4770793E20",
+  "tx_hash": "0x1d4ba443f72b84ce47e991bb7a00721acfe5b3d3518a506adfe63ea2430be8b4",
+  "registry": "0x8004a818bfb912233c491871b3d84c89a494bd9e",
+  "explorer_tx": "https://testnet.bscscan.com/tx/0x1d4ba443f72b84ce47e991bb7a00721acfe5b3d3518a506adfe63ea2430be8b4",
+  "gas": "sponsored (MegaFuel paymaster) \u2014 gas-free testnet"
+}
