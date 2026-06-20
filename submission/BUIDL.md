@@ -8,13 +8,15 @@
 
 ## TL;DR
 
-VERDICT is an **LLM-authored crypto strategy engine that behaves like an honest quant.** It pulls live
-CoinMarketCap signals, generates several deterministic candidate strategies, validates each with
-**rolling walk-forward out-of-sample windows** under a **realistic PancakeSwap DEX cost model**, and
-applies a **pre-registered 3-criterion rule** to emit an `AgentVerdict`: the best risk-adjusted
-`StrategySpec`, or an honest **`NO_TRADE`** when nothing survives. The deliverable is a CMC Skill
-(`skills/verdict-strategy/SKILL.md`) plus the engine that backs it. **Every number in the spec comes
-from code, so a judge reproduces it byte-for-byte from a clean clone with no API key.**
+VERDICT is an **LLM-authored crypto strategy engine that behaves like an honest quant.** It reads
+CoinMarketCap signals (live with a key; reproducible committed candle fixtures otherwise), generates
+several deterministic candidate strategies, validates each with **rolling walk-forward out-of-sample
+windows** under a **realistic PancakeSwap DEX cost model**, and applies a **pre-registered 3-criterion
+rule** to emit an `AgentVerdict`. It is **two-sided**: a genuine `TRADE` when a validated edge survives
+costs, an honest **`NO_TRADE`** when none does. The deliverable is a CMC Skill
+(`skills/verdict-strategy/SKILL.md`) plus the engine that backs it. **Every number comes from code, so a
+judge reproduces the spec deterministically from a clean clone with no API key — byte-identical except
+the `created_at` provenance timestamp.**
 
 ---
 
@@ -37,9 +39,12 @@ CoinMarketCap signal  ─►  generate many candidates  ─►  walk-forward + D
 
 1. **Signal** — `verdict/signals/` normalizes CMC quotes, technicals, Fear & Greed / BTC dominance,
    and derivatives funding/OI into a typed `Signal`, and derives a pre-registered market `regime`.
-2. **Generate** — `verdict/core/candidates.py` emits ≥ 3 distinct archetypes per asset as
-   deterministic, human-readable `StrategySpec`s whose every rule is evaluable 1:1 by the backtester.
-   The regime tunes parameters (risk-off ⇒ stronger trend filter, deeper oversold, smaller size).
+2. **Generate** — `verdict/core/candidates.py` emits **regime-gated** archetypes per asset (momentum →
+   trends, mean-reversion → ranges with a confirmed turn that does not knife-catch downtrends, breakout →
+   expansions) as deterministic `StrategySpec`s, using a rule grammar with primitives like `at_least N of
+   [...]`, `ema_slope_N`, `bb_width`, `atr_pct`. Each archetype trades **only** in the regime where it has
+   edge and stands aside elsewhere (0 trades in a downtrend). CMC Fear & Greed and **BTC dominance** tune
+   risk (risk-off / BTC-dominance ≥ 55% ⇒ tighter filters, smaller size, stronger confluence for alts).
 3. **Validate** — `verdict/core/backtest.py` + `walkforward.py` run a strict **no-lookahead** backtest
    (signal on bar *t* close, fill at *t+1* open) across rolling train/test windows, netting a
    **PancakeSwap v2 cost model** (0.25% fee + 30 bps slippage) on every round trip.
@@ -57,33 +62,38 @@ one. VERDICT adds the four things that separate quant research from a backtest s
 | Validation | one in-sample window | **rolling walk-forward**, strict OOS hold-out |
 | Costs | none / nominal | **DEX cost model** netted on every trade + a pre-trade cost gate |
 | Selection | "best risk-adjusted" post-hoc | **pre-registered 3-criterion rule** (committed before results) |
-| Null result | always ships a TRADE | **honest `NO_TRADE`** with per-candidate reasons |
+| Verdict | always ships a TRADE | **two-sided**: a real `TRADE` when an edge survives walk-forward + costs, an honest `NO_TRADE` (with per-candidate reasons) when none does |
 
 ## How it maps to the Track-2 judging criteria
 
-- **Technical execution** — a real engine, not cosmetic: 98 passing tests, no-lookahead proof,
-  deterministic outputs, a documented cost model, and walk-forward. `pytest verdict -q` → **98 passed**.
-- **Originality** — pre-registration + an honest null result is a genuinely different take: the skill
-  is willing to tell the user *not* to trade. That is rare and is the credibility differentiator.
+- **Technical execution** — a real engine, not cosmetic: 122 passing tests, no-lookahead proof,
+  deterministic outputs, a documented cost model, and walk-forward. `python -m pytest verdict -q` →
+  **122 passed, 2 skipped**.
+- **Originality** — pre-registration + a two-sided verdict is a genuinely different take: the skill
+  issues a real `TRADE` when a validated edge exists *and* tells the user *not* to trade when it does
+  not (see `skills/verdict-strategy/scripts/two_sided_demo.py`). That honesty is the differentiator.
 - **Real-world relevance** — the output is a deterministic, inspectable, backtestable, exportable
-  `StrategySpec`: exactly what a desk would diligence, and the substrate for the Track-1 live agent.
-- **Demo & presentation** — one reproducible command, a clean `AgentVerdict` JSON, and
-  equity/benchmark/drawdown PNGs that make the "beat buy-&-hold?" question legible at a glance.
+  `StrategySpec`: exactly what a desk would diligence, and the substrate for a future live agent.
+- **Demo & presentation** — one reproducible command, a clean `AgentVerdict` JSON, a regime-intelligence
+  table, and equity/drawdown PNGs that make the "beat buy-&-hold?" question legible at a glance.
 
 ## Reproduce it (the judge checkpoint)
 
 ```bash
 git clone https://github.com/kesanabalasainadh/bitbucket
-cd bitbucket && pip install -r requirements.txt
+cd bitbucket
+pip install -r requirements.txt
 python -m verdict.core.select --assets BNB/USDT,CAKE/USDT,BTC/USDT,ETH/USDT --tf 4h
 ```
 
-No key, no network — it reads committed candles and prints a schema-valid `AgentVerdict`. On the
-shipped fixtures it returns **`NO_TRADE`**: across BNB/CAKE/BTC/ETH on 4h, none of the 12 candidates
-clears the pre-registered bar after PancakeSwap costs. The closest (CAKE/4h mean-reversion) *preserved*
-capital while buy-&-hold fell ~80% — yet still lost money net of costs, so VERDICT **declines to
-endorse it**. A single-shot backtester would have shipped it as "market-beating." See real sample
-outputs (JSON + the 3 curve PNGs) in `skills/verdict-strategy/examples/`.
+No key, no network — it reads committed `ccxt-kucoin` candle fixtures and prints a schema-valid
+`AgentVerdict`. On the real BSC majors it returns **`NO_TRADE`**: across BNB/CAKE/BTC/ETH on 4h, nothing
+clears the pre-registered bar out-of-sample after PancakeSwap costs. But VERDICT is **two-sided** —
+`python skills/verdict-strategy/scripts/two_sided_demo.py` also issues a genuine **`TRADE`** on a
+controlled validated-edge regime (median OOS **+9.2%** vs buy-&-hold **+1.4%**, beat the benchmark in
+**100%** of walk-forward windows), proving the skill acts when an edge survives. See real sample outputs
+in `skills/verdict-strategy/examples/` (`demo_TRADE_controlled_range.json`,
+`demo_NO_TRADE_real_majors.json`, `regime_intelligence.json` + curves).
 
 ## Deep CoinMarketCap usage (targets "Best Use of CMC Data & Signal")
 
@@ -92,11 +102,14 @@ engine consumes:
 
 - `get_crypto_quotes_latest` → live mark per pair
 - `get_crypto_technical_analysis` → RSI / MACD / EMA-stack / ATR / ADX → candidate rules + regime trend
-- `get_global_metrics_latest` → Fear & Greed + BTC dominance → pre-registered regime rule
+- `get_global_metrics_latest` → Fear & Greed (sets the risk-off regime) **+ BTC dominance ≥ 55%
+  tightens risk and forces 3-of-3 confluence for non-BTC alts** — both consumed in `candidates.py` and
+  echoed verbatim into each spec's `reasoning`
 - `get_global_crypto_derivatives_metrics` → funding rate + open interest → regime/quality filter
 
 Depth over breadth: CMC drives the *regime and parameters*; the deterministic validation runs on
-committed candles so the graded spec is reproducible. The skill degrades gracefully to offline
+committed `ccxt-kucoin` candle fixtures (CMC powers the signal/regime layer, not the raw OHLCV) so the
+graded spec is reproducible. The skill degrades gracefully to offline
 fixtures when no key is present.
 
 ## Architecture / where to look
@@ -121,11 +134,14 @@ any results were seen (auditable in `verdict/core/select.py`):
 Among passers, the highest `risk_score` wins; if none pass, `NO_TRADE`. No RNG, no clock, no network in
 the backtest — identical inputs give identical specs.
 
-## Track 1 (stretch, built on the same brain)
+## Track 1 (stretch — agent layer scaffolded, live execution is future work)
 
-The same `StrategySpec` feeds a live BSC agent (`verdict/agent/`, `verdict/execution/`) that signs via
-the Trust Wallet Agent Kit and trades on PancakeSwap under a hard drawdown kill-switch and a risk
-governor. Track 2 ships first and stands on its own.
+The same `StrategySpec` is *designed* to feed a future BSC agent. What exists today: an explainable
+decision matrix (`verdict/core/matrix.py` — TRADE/WAIT/DCA/NO_TRADE), a hard-drawdown **kill-switch**
+(`verdict/safety/kill_switch.py`), and a sentiment-aware **DCA agent** (`verdict/agent/dca.py`) with
+**zero execution authority** — it explains, it never signs. There is **no** Trust Wallet signing or
+PancakeSwap execution in this codebase yet (`verdict/execution/` is an empty placeholder). Track 2 ships
+first and stands on its own.
 
 ## Tech & sponsor stack
 

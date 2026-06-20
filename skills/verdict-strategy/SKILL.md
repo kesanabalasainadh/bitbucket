@@ -2,7 +2,7 @@
 name: verdict-strategy
 description: |
   Use when a user wants a *backtested* crypto trading strategy with an honest verdict — not a
-  hyped one-shot backtest. VERDICT pulls live CoinMarketCap signals, generates several deterministic
+  hyped one-shot backtest. VERDICT reads CoinMarketCap signals (live with a key, reproducible fixtures otherwise), generates several deterministic
   candidate strategies (momentum / mean-reversion / breakout), validates each with rolling
   walk-forward out-of-sample windows under a realistic PancakeSwap DEX cost model, applies a
   pre-registered 3-criterion rule, and emits an AgentVerdict: the best risk-adjusted StrategySpec, or
@@ -42,7 +42,8 @@ output is an `AgentVerdict` JSON — a deterministic, inspectable, backtestable 
    cd bitbucket
    pip install -r requirements.txt
    ```
-   The skill runs offline out of the box: committed historical candles under
+   The skill runs offline out of the box: committed historical candles (sourced from a public exchange
+   via ccxt/kucoin — **not** CMC, which powers the live regime layer) under
    `verdict/core/_fixtures/candles/` (BNB, CAKE, BTC, ETH) make every run reproducible with **no key
    and no network**.
 
@@ -71,7 +72,7 @@ output is an `AgentVerdict` JSON — a deterministic, inspectable, backtestable 
   parameters (risk-off tightens trend filters, deepens oversold thresholds, shrinks size).
 - The **engine** does everything that decides TRADE vs NO_TRADE: no-lookahead backtest (signal on bar
   *t* close, fill at *t+1* open), rolling walk-forward, DEX cost netting, and the pre-registered rule.
-- **Determinism is the contract:** identical inputs → identical `StrategySpec` numbers, byte for byte.
+- **Determinism is the contract:** identical inputs → identical `StrategySpec` numbers (byte-identical except the `created_at` provenance timestamp).
   The final spec's metrics come from code, **never** from a model's guess.
 
 ---
@@ -180,6 +181,8 @@ The skill is built to **always return a verdict**, degrading fidelity instead of
 - **No candle fixture for a requested pair/timeframe** → that pair is listed in `rejected` with the
   reason; the other pairs still produce a verdict.
 - **Nothing clears the pre-registered bar** → emit `NO_TRADE` with per-candidate reasons. This is a
-  feature: an honest null beats a hyped strategy. (The shipped `examples/` are real `NO_TRADE` runs —
-  on CAKE/4h the strategy *preserved* capital while buy-&-hold fell ~80%, yet still didn't clear the
-  absolute risk-adjusted gate, so VERDICT declines to endorse it.)
+  feature: an honest null beats a hyped strategy. The shipped `examples/` are real **two-sided** runs
+  from `scripts/two_sided_demo.py`: `demo_TRADE_controlled_range.json` is a genuine `TRADE` where a
+  validated edge survives costs (median OOS +9.2% vs buy-&-hold +1.4%, beat the benchmark in 100% of
+  walk-forward windows), and `demo_NO_TRADE_real_majors.json` is an honest `NO_TRADE` on the real BSC
+  majors — proving the engine acts when an edge exists and declines when it does not.

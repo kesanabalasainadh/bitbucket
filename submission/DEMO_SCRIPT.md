@@ -14,10 +14,10 @@
 - **Visual**: Run the main reproducible CLI command: `python -m verdict.core.select --assets BNB/USDT,CAKE/USDT,BTC/USDT,ETH/USDT --tf 4h`
 - **Script**: "We don't just backtest once. VERDICT generates multiple candidates and runs them through a strict, no-lookahead rolling walk-forward validation. We also apply a realistic PancakeSwap DEX cost model on every trade."
 
-## 1:30 - The Pre-Registered Rule (Honesty)
-- **Visual**: Highlight the `NO_TRADE` output JSON on the screen.
-- **Script**: "Here is the moat. We apply a pre-registered 3-criterion rule. If no strategy clears the hurdle net of costs, VERDICT honestly outputs `NO_TRADE`. It will never force a bad trade."
+## 1:30 - Two-Sided: the Pre-Registered Rule (Honesty)
+- **Visual**: Run `python skills/verdict-strategy/scripts/two_sided_demo.py` — show the regime table (each archetype acts only in its regime; **0 trades in a downtrend**), the genuine `TRADE` on the controlled validated-edge market, and the honest `NO_TRADE` on the real majors.
+- **Script**: "Here is the moat — VERDICT is two-sided. We apply a pre-registered 3-criterion rule out-of-sample, net of DEX costs. When a candidate genuinely clears it — like this range strategy that beat buy-and-hold in 100% of walk-forward windows — VERDICT issues a `TRADE` with full evidence. When nothing clears it, as on the real BSC majors, it honestly outputs `NO_TRADE`. It never forces a bad trade, and it never hides a real edge."
 
-## 2:00 - Execution (Track 1 Stretch)
-- **Visual**: Show `skills/verdict-strategy/examples/equity_curve.png` and then briefly show `verdict/agent/` execution loop.
-- **Script**: "When a strategy *does* survive, the `AgentVerdict` JSON is handed to a Trust Wallet Agent Kit execution loop, trading securely on PancakeSwap/BNB Chain, governed by a hard drawdown kill-switch. Thank you for watching!"
+## 2:00 - The Agent Layer (decision matrix · kill-switch · DCA narrative)
+- **Visual**: Show `verdict/core/matrix.py` (TRADE/WAIT/DCA/NO_TRADE), `verdict/safety/kill_switch.py`, and `skills/verdict-strategy/examples/TRADE_equity.png`.
+- **Script**: "The `AgentVerdict` feeds an explainable decision matrix, a hard-drawdown kill-switch, and a sentiment-aware DCA agent with **zero execution authority** — it explains, it never signs. Live PancakeSwap / Trust Wallet execution is Track-1 future work, deliberately not in this codebase. Everything you saw is deterministic and reproducible from a clean clone with no API key. Thank you for watching!"

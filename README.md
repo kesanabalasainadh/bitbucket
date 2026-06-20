@@ -24,8 +24,9 @@ survives, it says so.
    keys are present; x402 and execution are not implemented in this codebase.
 2. **Sentiment** — builds a bounded, cacheable `SentimentSnapshot` from offline/news headlines so context
    can adjust confidence without dominating price evidence.
-3. **Generate** — proposes multiple candidate strategies (momentum, mean-reversion, breakout) as
-   deterministic, human-readable `StrategySpec`s.
+3. **Generate** — proposes **regime-gated** candidate strategies (momentum → trends, mean-reversion →
+   ranges with a confirmed turn, breakout → expansions) as deterministic, human-readable `StrategySpec`s,
+   using a rule grammar with primitives like `at_least N of [...]`, `ema_slope_N`, `bb_width`, `atr_pct`.
 4. **Validate** — runs each through a **rolling walk-forward** backtest with an explicit cost model
    and strict **no-lookahead** discipline.
 5. **Verdict** — applies a **pre-registered 3-criterion rule** (beats benchmark net of costs · positive
@@ -53,14 +54,17 @@ pip install -r requirements.txt
 python -m verdict.core.select --assets BNB/USDT,CAKE/USDT,BTC/USDT,ETH/USDT --tf 4h
 ```
 That's the whole reproducibility checkpoint: **no API key, no network** — it runs on committed
-historical candles under `verdict/core/_fixtures/candles/` and prints a schema-valid `AgentVerdict`
-JSON. Rerun it and you get byte-identical output (bar the `created_at` timestamp); the spec's numbers
-come from deterministic code, never an LLM guess. On the shipped fixtures the engine returns an honest
-**`NO_TRADE`** — nothing clears the pre-registered bar after DEX costs, and that null result *is* the
-deliverable's credibility.
+`ccxt-kucoin` candle fixtures under `verdict/core/_fixtures/candles/` and prints a schema-valid
+`AgentVerdict` JSON. Rerun it and you get byte-identical output except the `created_at` provenance
+timestamp; the numbers come from deterministic code, never an LLM guess. On the real majors the engine
+returns an honest **`NO_TRADE`** — nothing clears the pre-registered bar after DEX costs. But VERDICT is
+**two-sided**: `python skills/verdict-strategy/scripts/two_sided_demo.py` also issues a genuine `TRADE`
+on a controlled validated-edge regime (beat buy-&-hold in 100% of walk-forward windows), so the null
+result is a *judgement*, not the only thing the engine can say.
 
-Want the equity / benchmark / drawdown PNGs alongside the JSON (and live CMC data if you set
-`CMC_MCP_API_KEY`)? Use the skill's entrypoint — same numbers, plus charts:
+Want the equity / drawdown PNGs alongside the JSON (and live CMC **regime/signal** data if you set
+`CMC_MCP_API_KEY` — the graded backtest still runs on the committed candle fixtures)? Use the skill's
+entrypoint — same numbers, plus charts:
 
 ```bash
 cp .env.example .env           # optional: add CMC_MCP_API_KEY for live regime context
