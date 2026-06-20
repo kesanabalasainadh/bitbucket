@@ -48,6 +48,23 @@ def _signal_ctx(signal: Optional[Signal]) -> str:
     return "Signal context: " + ", ".join(bits) + tail
 
 
+# Pre-registered BTC-dominance gate (consumes the CMC global-metrics signal).
+# High BTC dominance => capital concentrates in BTC and ALTS bleed; for a NON-BTC
+# asset we demand stronger confluence (3-of-3) + tighter risk. For BTC itself,
+# high dominance is a tailwind (no penalty). Deterministic; a no-op when the
+# signal or btc_dominance is unavailable (offline / partial-data path).
+BTC_DOM_HIGH = 55.0    # CMC btc_dominance >= 55% => alt headwind
+
+
+def _alt_headwind(signal: Optional[Signal], symbol: str) -> bool:
+    """True when CMC BTC dominance is high AND the asset is a non-BTC alt."""
+    if signal is None or signal.btc_dominance is None:
+        return False
+    if symbol.split("/")[0].strip().upper() == "BTC":
+        return False
+    return signal.btc_dominance >= BTC_DOM_HIGH
+
+
 def generate_candidates(
     series: OHLCVSeries, signal: Optional[Signal] = None
 ) -> list[StrategySpec]:
@@ -61,6 +78,19 @@ def generate_candidates(
     data_source = (f"cmc ({signal.source}) + {series.source}" if signal else series.source)
     ctx = _signal_ctx(signal)
     slug = _slug(symbol)
+
+    # CMC BTC-DOMINANCE GATE — consumes signal.btc_dominance. High dominance =>
+    # alts bleed; for a non-BTC asset tighten risk (conservative profile + halved
+    # size) and require 3-of-3 confluence instead of 2-of-3. No-op for BTC and on
+    # the offline/None path, so behaviour degrades gracefully.
+    alt_headwind = _alt_headwind(signal, symbol)
+    confluence_n = 2
+    if alt_headwind:
+        risk_profile = RiskProfile.CONSERVATIVE
+        size = "risk 1% of equity per trade"
+        confluence_n = 3
+        ctx = ctx + (f" BTC dominance {signal.btc_dominance:.1f}% >= {BTC_DOM_HIGH:.0f}% "
+                     f"(alt headwind): tightened risk + 3-of-3 confluence for {symbol}.")
 
     def spec(**kw) -> StrategySpec:
         base = dict(
@@ -85,7 +115,7 @@ def generate_candidates(
         "ema_50 > ema_100",
         f"ema_slope_50 > {0.004 if risk_off else 0.002}",
         # CONFLUENCE — 2-of-3: momentum thrust, RSI above midline, higher-TF alignment.
-        f"at_least 2 of [macd_hist > 0; rsi_14 > {55 if risk_off else 50}; ema_100 > ema_200]",
+        f"at_least {confluence_n} of [macd_hist > 0; rsi_14 > {55 if risk_off else 50}; ema_100 > ema_200]",
     ]
     momentum = spec(
         id=f"momentum-{slug}-{tf}",
@@ -150,7 +180,7 @@ def generate_candidates(
             f"volume > vol_sma_20 * {vol_mult}",
             f"adx_14 > {adx_min}",
             # CONFLUENCE — 2-of-3: above mid-trend, RSI thrust, EMA stack alignment.
-            "at_least 2 of [close > ema_50; rsi_14 > 55; ema_50 > ema_100]",
+            f"at_least {confluence_n} of [close > ema_50; rsi_14 > 55; ema_50 > ema_100]",
         ],
         exit_rules=["max_hold=12 bars", "ema_20 crosses_below ema_50"],
         stop_loss="2.0 * ATR(14)", take_profit="4.0 * ATR(14)",
