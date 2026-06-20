@@ -117,6 +117,8 @@ def build_signal(
     regime = derive_regime(fear_greed, _btc_trend_up(client))
     transport_name = type(getattr(client, "transport", None)).__name__
     source = "cmc-" + transport_name.replace("Transport", "").lower()
+    if getattr(client, "degraded", False):
+        source += "-degraded"
 
     return Signal(
         ts=ts or datetime.now(timezone.utc),

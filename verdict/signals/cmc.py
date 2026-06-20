@@ -18,7 +18,7 @@ from typing import Optional
 from verdict.schema import OHLCVSeries
 from verdict.signals.ohlcv import parse_ohlcv
 from verdict.signals.symbols import base_symbol
-from verdict.signals.transport import DEFAULT_FIXTURES, Transport, make_transport
+from verdict.signals.transport import DEFAULT_FIXTURES, Transport, make_transport, OfflineTransport
 
 # canonical Signal indicator key -> accepted CMC field aliases
 _TA_ALIASES = {
@@ -118,12 +118,14 @@ class CMCClient:
         api_key: Optional[str] = None,
         fixtures_dir=None,
     ):
+        self.fixtures_dir = fixtures_dir or DEFAULT_FIXTURES
         if transport is None:
             transport = make_transport(
                 kind=kind, api_key=api_key, offline=offline,
-                fixtures_dir=fixtures_dir or DEFAULT_FIXTURES,
+                fixtures_dir=self.fixtures_dir,
             )
         self.transport = transport
+        self.degraded = False
 
     @classmethod
     def offline(cls, fixtures_dir=None) -> "CMCClient":
@@ -133,6 +135,11 @@ class CMCClient:
     @classmethod
     def from_env(cls, env=None) -> "CMCClient":
         """Default MCP, fall back to REST, by which key is present. No key -> offline."""
+        try:
+            from dotenv import load_dotenv
+            load_dotenv()
+        except ImportError:
+            pass
         env = env if env is not None else os.environ
         if env.get("CMC_MCP_API_KEY"):
             return cls(kind="mcp", api_key=env["CMC_MCP_API_KEY"])
@@ -140,23 +147,36 @@ class CMCClient:
             return cls(kind="rest", api_key=env["CMC_PRO_API_KEY"])
         return cls(offline=True)
 
+    def _fetch_with_fallback(self, resource: str, params: dict) -> dict:
+        try:
+            return self.transport.fetch(resource, params)
+        except Exception as e:
+            if not isinstance(self.transport, OfflineTransport):
+                print(f"Warning: Live transport fetch failed for {resource} ({e}). Gated on Basic tier? Falling back to offline fixtures.", file=sys.stderr)
+                self.degraded = True
+                offline = OfflineTransport(self.fixtures_dir)
+                return offline.fetch(resource, params)
+            raise
+
     # --- CONTRACTS.md WP-3 surface ---------------------------------------- #
     def quotes(self, symbols: list[str]) -> dict[str, float]:
-        env = self.transport.fetch("quotes", {"symbols": [base_symbol(s) for s in symbols]})
+        env = self._fetch_with_fallback("quotes", {"symbols": [base_symbol(s) for s in symbols]})
         return _parse_quotes(env, symbols)
 
     def technicals(self, symbol: str) -> dict[str, float]:
-        env = self.transport.fetch("technicals", {"symbol": base_symbol(symbol)})
+        env = self._fetch_with_fallback("technicals", {"symbol": base_symbol(symbol)})
         return _parse_technicals(env, symbol)
 
     def derivatives(self) -> dict:
-        return _parse_derivatives(self.transport.fetch("derivatives", {}))
+        env = self._fetch_with_fallback("derivatives", {})
+        return _parse_derivatives(env)
 
     def global_metrics(self) -> dict:
-        return _parse_global_metrics(self.transport.fetch("global_metrics", {}))
+        env = self._fetch_with_fallback("global_metrics", {})
+        return _parse_global_metrics(env)
 
     def ohlcv(self, symbol: str, timeframe: str, start=None, end=None) -> OHLCVSeries:
-        env = self.transport.fetch(
+        env = self._fetch_with_fallback(
             "ohlcv", {"symbol": symbol, "timeframe": timeframe, "start": start, "end": end}
         )
         return parse_ohlcv(env, symbol, timeframe)
@@ -171,6 +191,12 @@ from verdict.signals.normalize import build_signal  # noqa: E402
 # CLI:  python -m verdict.signals.cmc --symbol BNB/USDT --offline
 # --------------------------------------------------------------------------- #
 def main(argv: Optional[list[str]] = None) -> int:
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+    except ImportError:
+        pass
+
     parser = argparse.ArgumentParser(description="Print a normalized VERDICT Signal for a symbol.")
     parser.add_argument("--symbol", default="BNB/USDT", help="market pair, e.g. BNB/USDT")
     parser.add_argument("--offline", action="store_true",
