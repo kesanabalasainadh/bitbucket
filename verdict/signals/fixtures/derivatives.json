@@ -1,0 +1,8 @@
+{
+  "status": {"timestamp": "2026-06-19T12:00:00.000Z", "error_code": 0},
+  "data": {
+    "funding_rate": {"BNB": 0.00012, "BTC": 0.00007, "ETH": 0.00009, "CAKE": -0.00004},
+    "open_interest": {"BNB": 742000000.0, "BTC": 19200000000.0, "ETH": 8100000000.0, "CAKE": 21000000.0},
+    "liquidations_24h": {"long": 120000000.0, "short": 90000000.0, "total": 210000000.0}
+  }
+}

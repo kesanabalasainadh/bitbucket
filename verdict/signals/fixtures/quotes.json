@@ -1,0 +1,24 @@
+{
+  "status": {"timestamp": "2026-06-19T12:00:00.000Z", "error_code": 0, "error_message": null, "credit_count": 1},
+  "data": {
+    "BNB": {"id": 1839, "symbol": "BNB", "name": "BNB", "last_updated": "2026-06-19T12:00:00.000Z",
+      "quote": {"USD": {"price": 612.34, "volume_24h": 1834000000.0, "percent_change_1h": 0.21,
+        "percent_change_24h": 2.13, "percent_change_7d": -3.42, "market_cap": 90150000000.0,
+        "last_updated": "2026-06-19T12:00:00.000Z"}}},
+    "BTC": {"id": 1, "symbol": "BTC", "name": "Bitcoin", "last_updated": "2026-06-19T12:00:00.000Z",
+      "quote": {"USD": {"price": 104230.5, "volume_24h": 38200000000.0, "percent_change_1h": 0.05,
+        "percent_change_24h": 1.12, "percent_change_7d": 4.6, "market_cap": 2060000000000.0,
+        "last_updated": "2026-06-19T12:00:00.000Z"}}},
+    "ETH": {"id": 1027, "symbol": "ETH", "name": "Ethereum", "last_updated": "2026-06-19T12:00:00.000Z",
+      "quote": {"USD": {"price": 3320.18, "volume_24h": 14100000000.0, "percent_change_1h": 0.11,
+        "percent_change_24h": 1.84, "percent_change_7d": 2.1, "market_cap": 400000000000.0,
+        "last_updated": "2026-06-19T12:00:00.000Z"}}},
+    "CAKE": {"id": 7186, "symbol": "CAKE", "name": "PancakeSwap", "last_updated": "2026-06-19T12:00:00.000Z",
+      "quote": {"USD": {"price": 2.41, "volume_24h": 78000000.0, "percent_change_1h": -0.3,
+        "percent_change_24h": -1.2, "percent_change_7d": -5.0, "market_cap": 720000000.0,
+        "last_updated": "2026-06-19T12:00:00.000Z"}}},
+    "USDT": {"id": 825, "symbol": "USDT", "name": "Tether USDt", "last_updated": "2026-06-19T12:00:00.000Z",
+      "quote": {"USD": {"price": 1.0001, "volume_24h": 52000000000.0, "percent_change_24h": 0.0,
+        "market_cap": 112000000000.0, "last_updated": "2026-06-19T12:00:00.000Z"}}}
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "status": {"timestamp": "2026-06-19T12:00:00.000Z", "error_code": 0},
+  "data": {
+    "btc_dominance": 54.21,
+    "eth_dominance": 17.05,
+    "fear_and_greed": {"value": 63, "value_classification": "Greed", "update_time": "2026-06-19T12:00:00.000Z"},
+    "active_cryptocurrencies": 9800,
+    "quote": {"USD": {"total_market_cap": 2410000000000.0, "total_volume_24h": 109000000000.0,
+      "altcoin_market_cap": 1100000000000.0, "last_updated": "2026-06-19T12:00:00.000Z"}}
+  }
+}
