@@ -99,7 +99,10 @@ def _read_candles(symbol: str, timeframe: str, path: Path) -> OHLCVSeries:
             )
         )
     bars.sort(key=lambda b: b.ts)
-    return OHLCVSeries(symbol=symbol, timeframe=timeframe, bars=bars)
+    # Honest provenance: the committed candle fixtures are sourced from a public
+    # exchange via ccxt (kucoin) — NOT CoinMarketCap. CMC powers the live
+    # signal/regime layer (verdict/signals/), not the raw historical OHLCV.
+    return OHLCVSeries(symbol=symbol, timeframe=timeframe, source="ccxt-kucoin", bars=bars)
 
 
 def _slice(series: OHLCVSeries, start: Optional[datetime], end: Optional[datetime]) -> OHLCVSeries:

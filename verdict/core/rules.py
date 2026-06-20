@@ -56,9 +56,10 @@ SUPPORTED: dict[str, list[str]] = {
     "base_columns": ["close", "open", "high", "low", "volume"],
     "parametric_indicators": [
         "ema_<N>", "sma_<N>", "rsi_<N>", "atr_<N>", "adx_<N>",
-        "donchian_high_<N>", "donchian_low_<N>", "vol_sma_<N>",
+        "donchian_high_<N>", "donchian_low_<N>", "vol_sma_<N>", "ema_slope_<N>",
     ],
-    "fixed_indicators": ["macd", "macd_signal", "macd_hist", "bb_upper", "bb_lower", "bb_mid"],
+    "fixed_indicators": ["macd", "macd_signal", "macd_hist", "bb_upper", "bb_lower",
+                         "bb_mid", "bb_width", "atr_pct"],
     "operand_forms": ["<col>", "<number>", "<col>*<k>", "<col>+<k>", "<col>-<k>"],
     "rule_forms": [
         "<lhs> > <rhs>", "<lhs> < <rhs>", "<lhs> >= <rhs>", "<lhs> <= <rhs>", "<lhs> == <rhs>",
@@ -66,6 +67,7 @@ SUPPORTED: dict[str, list[str]] = {
         "<a> crosses_above <b>", "<a> crosses_below <b>",
         "abs(<a>-<b>)/<b> <= <p>",
         "<col> rising", "<col> falling",
+        "at_least <N> of [<rule>; <rule>; ...]",
     ],
     "exit_forms": ["<k> * ATR(<N>)", "<p>%", "max_hold=<n> bars", "<grammar rule>"],
 }
@@ -77,6 +79,8 @@ _IN_RE = re.compile(rf"^(.+?)\s+in\s+\[\s*({_FLOAT})\s*,\s*({_FLOAT})\s*\]$")
 _CROSS_RE = re.compile(r"^(.+?)\s+crosses_(above|below)\s+(.+?)$")
 _RISEFALL_RE = re.compile(r"^(.+?)\s+(rising|falling)$")
 _WITHIN_RE = re.compile(rf"^abs\(\s*(.+?)\s*-\s*(.+?)\s*\)\s*/\s*(.+?)\s*(<=|<)\s*({_FLOAT})$")
+# Confluence: "at_least N of [rule; rule; ...]" — True iff >= N sub-rules hold at t.
+_ATLEAST_RE = re.compile(r"^at_least\s+(\d+)\s+of\s+\[(.+)\]$", re.IGNORECASE | re.DOTALL)
 
 _EMA = re.compile(r"^ema_(\d+)$")
 _SMA = re.compile(r"^sma_(\d+)$")
@@ -190,6 +194,15 @@ def evaluate_rule(df: pd.DataFrame, t: int, rule: str) -> bool:
     """Evaluate one grammar rule on bar ``t`` (positional). NaN operand -> False."""
     raw = rule.strip()
     low = raw.lower()
+
+    # N-of-M confluence: "at_least N of [r1; r2; ...]"  (checked first — sub-rules
+    # may themselves contain comparison operators). A trader's "several reasons must
+    # agree": the score is an integer count of boolean rules, not a model output.
+    if (m := _ATLEAST_RE.match(raw)):
+        need = int(m.group(1))
+        subs = [s.strip() for s in m.group(2).split(";") if s.strip()]
+        hits = sum(1 for s in subs if evaluate_rule(df, t, s))
+        return hits >= need
 
     # rising / falling  (t vs t-1)
     if (m := _RISEFALL_RE.match(low)):

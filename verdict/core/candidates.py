@@ -78,54 +78,61 @@ def generate_candidates(
     # above 65, so capping it (the old "rsi in [40,65]") made the archetype unable
     # to enter a trend at all. Strength is the signal here, not a fade.
     mom_entry = [
-        "close > ema_50",
+        # REGIME GATE — eligible only in a confirmed uptrend (ADX strength + bullish
+        # EMA stack + positive slope). A pro doesn't trade momentum in chop.
+        f"adx_14 >= {28 if risk_off else 25}",
         "ema_20 > ema_50",
         "ema_50 > ema_100",
+        f"ema_slope_50 > {0.004 if risk_off else 0.002}",
+        # CONFLUENCE — 2-of-3: momentum thrust, RSI above midline, higher-TF alignment.
+        f"at_least 2 of [macd_hist > 0; rsi_14 > {55 if risk_off else 50}; ema_100 > ema_200]",
     ]
-    if risk_off:
-        mom_entry.append("ema_100 > ema_200")          # full stack in risk-off
-    mom_entry += ["macd_hist > 0", f"rsi_14 > {55 if risk_off else 50}"]
     momentum = spec(
         id=f"momentum-{slug}-{tf}",
         name=f"{symbol} {tf} Trend Momentum",
-        description="Ride a confirmed bullish EMA stack (20>50>100) with positive MACD "
-                    "momentum; hold until the 20/50 stack breaks. ATR risk bracket.",
+        description="Eligible only in a confirmed uptrend (ADX + bullish EMA stack + "
+                    "positive slope); enter on 2-of-3 confluence and ride until the 20/50 "
+                    "stack breaks. ATR risk bracket.",
         horizon="trend-follow (10-40 bars)", lookback=210 if risk_off else 120,
-        indicators=["EMA(20)", "EMA(50)", "EMA(100)"]
-        + (["EMA(200)"] if risk_off else [])
-        + ["MACD(12,26,9)", "RSI(14)", "ATR(14)"],
+        indicators=["EMA(20)", "EMA(50)", "EMA(100)", "EMA(200)", "EMA_slope(50)",
+                    "ADX(14)", "MACD(12,26,9)", "RSI(14)", "ATR(14)"],
         entry_rules=mom_entry,
         exit_rules=["ema_20 crosses_below ema_50", "max_hold=40 bars"],
         stop_loss="2.0 * ATR(14)", take_profit="8.0 * ATR(14)",
-        reasoning="Trend momentum: enter a confirmed bullish EMA stack with a positive "
-                  "MACD histogram and RSI above the midline, and ride it until the 20/50 "
-                  "stack rolls over. No upper RSI cap — momentum is the thesis. " + ctx,
+        reasoning="Trend momentum (regime-gated): only fires when ADX confirms a trend and "
+                  "the EMA stack is bullish with positive slope; needs 2-of-3 of {MACD>0, "
+                  "RSI>mid, EMA100>EMA200}, then rides until the 20/50 stack rolls over. " + ctx,
     )
 
-    # 2) Mean-reversion (Bollinger / RSI) ---------------------------------- #
-    # Buy the reversion TURN — price reclaiming the lower Bollinger band from
-    # oversold — not the falling knife. The old rule required "close > ema_200"
-    # together with deep-oversold, which is self-contradictory (a trough sits below
-    # the long-term mean): it admitted only early-down-leg entries and was stopped
-    # out ~100% of the time. Entering on the cross back above the band buys the
-    # bounce, and we exit at the band mean.
-    rsi_ceiling = 45 if risk_off else 50
+    # 2) Mean-reversion (regime-gated, confirmed-turn) --------------------- #
+    # THE knife-catch fix. Mean-reversion is eligible ONLY in a RANGE (low ADX) —
+    # most losing reversion trades are downtrend dead-cat bounces, and the regime
+    # gate deletes them outright. We then require a CONFIRMED turn (2-of-3) rather
+    # than buying oversold, and lean on the range floor (donchian_low) for a tight
+    # structural invalidation. Exit back at the band mean.
+    turn_floor = 30 if risk_off else 35
     meanrev = spec(
         id=f"meanrev-{slug}-{tf}",
-        name=f"{symbol} {tf} Mean-Reversion (Bollinger/RSI)",
-        description="Buy the reversion turn — price reclaiming the lower Bollinger band "
-                    "from oversold — and exit back at the band mean.",
+        name=f"{symbol} {tf} Mean-Reversion (range, confirmed turn)",
+        description="Eligible only in a low-ADX range; buy a CONFIRMED reversion turn off "
+                    "the range floor (2-of-3 confluence), exit at the band mean.",
         horizon="swing (2-12 bars)", lookback=120,
-        indicators=["BollingerBands(20,2)", "RSI(14)", "ATR(14)"],
+        indicators=["BollingerBands(20,2)", "RSI(14)", "ADX(14)",
+                    "Donchian(20)", "ATR(14)"],
         entry_rules=[
-            "close crosses_above bb_lower",
-            f"rsi_14 < {rsi_ceiling}",
+            # REGIME GATE — range only (kills downtrend knife-catches)
+            f"adx_14 < {18 if risk_off else 22}",
+            "close > donchian_low_20",          # reclaimed the range floor, not mid-fall
+            "close < bb_mid",                   # below the mean — genuine dislocation
+            # CONFIRMED TURN — 2-of-3: the reversal is in, not hoped-for
+            f"at_least 2 of [rsi_14 crosses_above {turn_floor}; close > open; macd_hist rising]",
         ],
-        exit_rules=["close crosses_above bb_mid", "rsi_14 > 60", "max_hold=12 bars"],
-        stop_loss="1.5 * ATR(14)", take_profit="2.5 * ATR(14)",
-        reasoning="Mean-reversion: wait for price to reclaim the lower Bollinger band "
-                  "from oversold (the turn, not the knife), then exit as it reverts to "
-                  "the band mean. " + ctx,
+        exit_rules=["close crosses_above bb_mid", "rsi_14 > 60", "max_hold=12 bars",
+                    "close crosses_below donchian_low_20"],   # structural invalidation
+        stop_loss="1.5 * ATR(14)", take_profit="2.0 * ATR(14)",
+        reasoning="Mean-reversion (regime-gated): only in a low-ADX range, buy a confirmed "
+                  "turn (2-of-3 of {RSI reclaim, up-close, MACD rising}) that has reclaimed "
+                  "the range floor; exit at the band mean. No knife-catching in trends. " + ctx,
     )
 
     # 3) Breakout (Donchian / volume) -------------------------------------- #
@@ -142,11 +149,14 @@ def generate_candidates(
             "close > donchian_high_20",
             f"volume > vol_sma_20 * {vol_mult}",
             f"adx_14 > {adx_min}",
+            # CONFLUENCE — 2-of-3: above mid-trend, RSI thrust, EMA stack alignment.
+            "at_least 2 of [close > ema_50; rsi_14 > 55; ema_50 > ema_100]",
         ],
-        exit_rules=["max_hold=12 bars"],
+        exit_rules=["max_hold=12 bars", "ema_20 crosses_below ema_50"],
         stop_loss="2.0 * ATR(14)", take_profit="4.0 * ATR(14)",
-        reasoning="Breakout: ride volatility expansion when price clears the prior-20-"
-                  "bar high on above-average volume with ADX confirming a trend. " + ctx,
+        reasoning="Breakout: ride volatility expansion when price clears the prior-20-bar "
+                  "high on above-average volume with ADX confirming a trend, plus 2-of-3 "
+                  "confluence (mid-trend, RSI thrust, stack alignment). " + ctx,
     )
 
     return [momentum, meanrev, breakout]

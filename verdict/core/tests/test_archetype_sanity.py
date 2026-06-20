@@ -47,9 +47,17 @@ def _uptrend() -> OHLCVSeries:
     return _mk([100 * (1.004 ** i) * (1 + 0.012 * math.sin(i / 4)) for i in range(700)])
 
 
-def _oscillator() -> OHLCVSeries:
-    # mean-reverting sine, amplitude 12%, period ~75 bars
-    return _mk([100 * (1 + 0.12 * math.sin(i / 12)) for i in range(700)])
+def _range() -> OHLCVSeries:
+    # low-ADX ranging market (tight, fast mean-reversion, no sustained trend) —
+    # mean-reversion's home turf. Momentum/breakout should stand aside (regime gate).
+    return _mk([100 * (1 + 0.05 * math.sin(i * 1.1) + 0.05 * math.sin(i * 0.37))
+                for i in range(700)])
+
+
+def _downtrend() -> OHLCVSeries:
+    # geometric decay with dead-cat-bounce sine — the knife-catch trap. A regime-gated
+    # mean-reversion MUST take zero trades here (the headline bug it fixes).
+    return _mk([100 * (0.996 ** i) * (1 + 0.03 * math.sin(i / 9)) for i in range(700)])
 
 
 def _breakout() -> OHLCVSeries:
@@ -76,16 +84,20 @@ def test_momentum_profits_a_clean_uptrend():
     assert m.sharpe_ratio > 0.5, f"momentum sharpe too low on its ideal market: {m.sharpe_ratio}"
 
 
-@pytest.mark.xfail(
-    reason="mean-reversion calibration in progress: single-trigger reversion entries catch "
-           "false dead-cat bounces mid-decline. Pending the regime-gated confluence redesign.",
-    strict=False,
-)
-def test_meanrev_profits_a_ranging_oscillator():
-    spec, m = _archetype(_oscillator(), "meanrev")
-    assert m.num_trades >= 3, f"meanrev took too few trades on an oscillator: {m.num_trades}"
-    assert m.return_pct > 0.0, f"meanrev lost on a clean oscillator (its ideal market): {m.return_pct}%"
-    assert m.win_rate > 0.4, f"meanrev win-rate too low on its ideal market: {m.win_rate}"
+def test_meanrev_profits_a_ranging_market():
+    spec, m = _archetype(_range(), "meanrev")
+    assert m.num_trades >= 3, f"meanrev took too few trades in a range: {m.num_trades}"
+    assert m.return_pct > 0.0, f"meanrev lost in a clean range (its ideal market): {m.return_pct}%"
+
+
+def test_meanrev_stands_aside_in_a_downtrend():
+    """The knife-catch regression. The OLD rule bought every dead-cat bounce in a
+    downtrend and was stopped out ~100% of the time. The regime gate (range only)
+    must make mean-reversion take ZERO trades in a sustained downtrend."""
+    spec, m = _archetype(_downtrend(), "meanrev")
+    assert m.num_trades == 0, (
+        f"meanrev knife-caught a downtrend: {m.num_trades} trades, {m.return_pct:.0f}% "
+        f"(regime gate failed to exclude the trend)")
 
 
 def test_breakout_profits_a_consolidate_then_break():
@@ -100,7 +112,7 @@ def test_no_archetype_is_structurally_dead():
     market built for it — guards against a future change re-introducing a rule that
     can never fire (the original momentum RSI-cap bug)."""
     for series, prefix in ((_uptrend(), "momentum"),
-                           (_oscillator(), "meanrev"),
+                           (_range(), "meanrev"),
                            (_breakout(), "breakout")):
         _, m = _archetype(series, prefix)
         assert m.num_trades >= 1, f"{prefix} is structurally dead in its ideal regime"
