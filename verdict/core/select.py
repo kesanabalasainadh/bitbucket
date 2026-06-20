@@ -77,13 +77,16 @@ def evaluate_candidate(spec: StrategySpec, series: OHLCVSeries, costs: CostModel
                  if detail.windows else 0.0)
     med_oos = median(detail.strategy_returns) if detail.strategy_returns else 0.0
     med_bench = median(detail.benchmark_returns) if detail.benchmark_returns else 0.0
+    oos_sharpe = median([w.metrics.sharpe_ratio for w in detail.windows]) if detail.windows else 0.0
+    oos_max_dd = max([w.metrics.max_drawdown for w in detail.windows], default=0.0)
+    oos_win_rate = median([w.metrics.win_rate for w in detail.windows]) if detail.windows else 0.0
 
     c1 = bool(detail.windows) and med_oos > med_bench
     c2 = pass_rate >= MIN_WINDOW_PASS_RATE
-    c3 = (m.sharpe_ratio >= MIN_SHARPE) and (m.max_drawdown <= MAX_DRAWDOWN_PCT)
+    c3 = (oos_sharpe >= MIN_SHARPE) and (oos_max_dd <= MAX_DRAWDOWN_PCT)
     eligible = bool(c1 and c2 and c3)
 
-    score = risk_score(m.sharpe_ratio, m.max_drawdown, m.win_rate, pass_rate)
+    score = risk_score(oos_sharpe, oos_max_dd, oos_win_rate, pass_rate)
 
     # fill the spec's evidence in place
     m.risk_score = score
@@ -97,7 +100,7 @@ def evaluate_candidate(spec: StrategySpec, series: OHLCVSeries, costs: CostModel
     spec.reasoning += (
         f" [walk-forward: {len(detail.windows)} OOS windows, beat buy&hold in "
         f"{pass_rate:.0%}; median OOS {med_oos:+.2f}% vs benchmark {med_bench:+.2f}%; "
-        f"Sharpe {m.sharpe_ratio:.2f}, maxDD {m.max_drawdown:.1f}%, "
+        f"OOS Sharpe {oos_sharpe:.2f}, OOS maxDD {oos_max_dd:.1f}%, "
         f"{m.num_trades} trades, risk_score {score:.0f}/100.]"
     )
 
@@ -109,12 +112,13 @@ def evaluate_candidate(spec: StrategySpec, series: OHLCVSeries, costs: CostModel
         if not c2:
             fails.append(f"only {pass_rate:.0%} of windows beat benchmark (need >= {MIN_WINDOW_PASS_RATE:.0%})")
         if not c3:
-            fails.append(f"risk-adjusted gate failed (Sharpe {m.sharpe_ratio:.2f} / maxDD {m.max_drawdown:.1f}%)")
+            fails.append(f"OOS risk-adjusted gate failed (Sharpe {oos_sharpe:.2f} / maxDD {oos_max_dd:.1f}%)")
         reason = "; ".join(fails)
 
     return dict(spec=spec, eligible=eligible, risk_score=score, reason=reason,
                 c1=c1, c2=c2, c3=c3, pass_rate=round(pass_rate, 4),
                 median_oos=round(med_oos, 4), median_bench=round(med_bench, 4),
+                oos_sharpe=round(oos_sharpe, 4), oos_max_drawdown=round(oos_max_dd, 4),
                 n_windows=len(detail.windows))
 
 
@@ -143,8 +147,8 @@ def select(candidates: list[StrategySpec], series: OHLCVSeries, costs: CostModel
             f"TRADE: {selected.name} on {series.symbol} {series.timeframe}. It cleared all "
             f"three pre-registered criteria — median OOS return {w['median_oos']:+.2f}% vs "
             f"buy&hold {w['median_bench']:+.2f}%, beat the benchmark in {w['pass_rate']:.0%} of "
-            f"{w['n_windows']} walk-forward windows, Sharpe {selected.metrics.sharpe_ratio:.2f}, "
-            f"max drawdown {selected.metrics.max_drawdown:.1f}% — and scored highest on "
+            f"{w['n_windows']} walk-forward windows, OOS Sharpe {w['oos_sharpe']:.2f}, "
+            f"OOS max drawdown {w['oos_max_drawdown']:.1f}% — and scored highest on "
             f"risk_score ({w['risk_score']:.0f}/100), net of {costs.label}."
         )
     else:
@@ -175,6 +179,8 @@ def select(candidates: list[StrategySpec], series: OHLCVSeries, costs: CostModel
                 "window_pass_rate": e["pass_rate"],
                 "median_oos_return_pct": e["median_oos"],
                 "median_benchmark_return_pct": e["median_bench"],
+                "oos_sharpe": e["oos_sharpe"],
+                "oos_max_drawdown_pct": e["oos_max_drawdown"],
                 "risk_score": e["risk_score"],
             } for e in evals
         },

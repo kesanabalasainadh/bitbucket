@@ -1,45 +1,48 @@
-# VERDICT — every trade earns a verdict
+# VERDICT — every trade idea earns a verdict
 
-> An LLM-authored crypto strategy engine that **generates many candidate strategies, validates them with
-> rolling walk-forward + realistic DEX costs, and ships only what survives** — or honestly says *no edge*.
+> A deterministic crypto strategy validator that **generates inspectable candidate strategies, validates
+> them with rolling walk-forward + explicit costs, blends bounded sentiment context, and ships only an
+> evidence-backed verdict** — or honestly says *no edge*.
 > Built for **BNB HACK: AI Trading Agent Edition** (CoinMarketCap × Trust Wallet × BNB Chain).
 
 [![Track 2](https://img.shields.io/badge/Track%202-Strategy%20Skills-F0B90B)]() · primary
-[![Track 1](https://img.shields.io/badge/Track%201-Autonomous%20Agent-26A17B)]() · stretch
+[![Track 1](https://img.shields.io/badge/Track%201-Future%20Executor-lightgrey)]() · explicitly out of scope for current code
 
 ---
 
 ## The problem
 
-LLM "trading strategies" are usually one prompt, one backtest, one cherry-picked window. They look great
-and fail live. **VERDICT exists to be the opposite: an honest quant.** It treats strategy generation as
-research — propose many hypotheses, test them out-of-sample on rolling windows, charge realistic costs,
-and only endorse a strategy that survives pre-registered criteria. When nothing survives, it says so.
+AI trading demos are often one prompt, one backtest, one cherry-picked window. They look good and fail
+live. **VERDICT exists to be stricter.** It treats strategy ideas as hypotheses: generate deterministic,
+human-readable candidates, test them out-of-sample on rolling windows, charge explicit costs, blend
+bounded sentiment context, and only endorse a setup that survives pre-registered criteria. When nothing
+survives, it says so.
 
 ## What it does
 
-1. **Signal** — pulls live crypto market data from the **CoinMarketCap Agent Hub** (quotes, technicals,
-   derivatives funding/OI, Fear & Greed, narratives) over MCP / REST / x402.
-2. **Generate** — proposes multiple candidate strategies (momentum, mean-reversion, breakout) as
+1. **Signal** — reads offline reproducible market fixtures and can use CoinMarketCap MCP/REST data when
+   keys are present; x402 and execution are not implemented in this codebase.
+2. **Sentiment** — builds a bounded, cacheable `SentimentSnapshot` from offline/news headlines so context
+   can adjust confidence without dominating price evidence.
+3. **Generate** — proposes multiple candidate strategies (momentum, mean-reversion, breakout) as
    deterministic, human-readable `StrategySpec`s.
-3. **Validate** — runs each through a **rolling walk-forward** backtest with a **DEX cost model**
-   (PancakeSwap fees + slippage) and strict **no-lookahead** discipline.
-4. **Verdict** — applies a **pre-registered 3-criterion rule** (beats benchmark net of costs · positive
+4. **Validate** — runs each through a **rolling walk-forward** backtest with an explicit cost model
+   and strict **no-lookahead** discipline.
+5. **Verdict** — applies a **pre-registered 3-criterion rule** (beats benchmark net of costs · positive
    in ≥60% of out-of-sample windows · Sharpe ≥ 1 & drawdown ≤ 25%) and emits an **`AgentVerdict`**: the
    best risk-adjusted strategy, or an honest `NO_TRADE`.
-5. **Execute** *(Track 1, stretch)* — hands the chosen spec to a live agent that signs via the **Trust
-   Wallet Agent Kit** and trades on **PancakeSwap / BSC**, governed by a hard drawdown kill-switch.
+6. **Narrate** — runs an explainable decision matrix, kill-switch check, and personality-driven DCA
+   narrative. This is not live execution.
 
 ```
-CoinMarketCap ─► Signal ─► candidate StrategySpecs ─► walk-forward + cost model ─► AgentVerdict ─► JSON
-   (data)                                                    (the moat)              │
-                                                                                     └► Trust Wallet ─► BSC  (Track 1)
+Market Data ─► News/Sentiment ─► Feature Layer ─► Decision Matrix ─► Risk Gates
+     └──────────── candidate StrategySpecs ─► walk-forward + cost model ─► Verdict ─► DCA Narrative
 ```
 
 ## Why it's different (the moat)
 
 Most Track-2 entries: *generate → backtest once → ship.*
-VERDICT: *generate many → walk-forward → cost-aware → pre-registered selection → honest verdict.*
+VERDICT: *generate candidates → walk-forward → cost-aware → sentiment-bounded matrix → risk-gated verdict.*
 That rigor is ported from a production trading engine (see [`reference/legacy_nse/`](reference/legacy_nse/README.md))
 and is exactly what the judging rewards: real technical execution, an original take, and credibility.
 
@@ -69,6 +72,12 @@ The CMC Skill itself lives in [`skills/verdict-strategy/`](skills/verdict-strate
 it into any Anthropic-compatible agent and invoke `/verdict`. Real sample outputs (JSON + curves) are
 in [`skills/verdict-strategy/examples/`](skills/verdict-strategy/examples/).
 
+For the V2 judge summary flow:
+
+```bash
+python -m verdict.demo --asset BNB/USDT --tf 4h --trait balanced
+```
+
 ## Repo layout
 
 | Path | What |
@@ -76,8 +85,10 @@ in [`skills/verdict-strategy/examples/`](skills/verdict-strategy/examples/).
 | `verdict/schema.py` | shared data contracts (StrategySpec, AgentVerdict, Signal, Decision, Fill) |
 | `verdict/core/` | quant core — backtest, walk-forward, costs, candidates, selection (WP-1, WP-2) |
 | `verdict/signals/` | CoinMarketCap adapter — MCP/REST/x402 → `Signal`/`OHLCVSeries` (WP-3) |
-| `verdict/execution/` | Trust Wallet / PancakeSwap executors (WP-4, Track 1) |
-| `verdict/agent/` | live runtime loop + risk governor (WP-5, Track 1) |
+| `verdict/sentiment/` | bounded news/headline sentiment snapshots |
+| `verdict/safety/` | kill-switch architecture and risk gate state |
+| `verdict/agent/` | narrative-only DCA agent; no live execution |
+| `verdict/execution/` | reserved for future executor work; currently empty |
 | `skills/verdict-strategy/` | the CMC **Strategy Skill** — Track-2 deliverable (WP-2) |
 | `docs/` | `HACKATHON_BRIEF.md`, `API_REFERENCE.md` |
 | `agents/` | parallel-build work packages `WP-1..6` |
@@ -85,8 +96,8 @@ in [`skills/verdict-strategy/examples/`](skills/verdict-strategy/examples/).
 | `CONTRACTS.md` · `ORCHESTRATION.md` | interfaces + the build plan |
 
 ## Sponsor stack
-**CoinMarketCap Agent Hub** (signal layer, all tracks) · **Trust Wallet Agent Kit** (custody+execution,
-Track 1) · **BNB Chain / PancakeSwap** (venue, Track 1). Details in
+**CoinMarketCap Agent Hub** (signal layer) is the implemented sponsor-facing path. **Trust Wallet Agent
+Kit / BNB Chain / PancakeSwap execution is future work and is not claimed as working code.** Details in
 [`docs/API_REFERENCE.md`](docs/API_REFERENCE.md).
 
 ## Status

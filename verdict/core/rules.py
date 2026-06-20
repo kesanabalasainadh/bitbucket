@@ -85,6 +85,9 @@ _ATR = re.compile(r"^atr_(\d+)$")
 _ADX = re.compile(r"^adx_(\d+)$")
 _DONCH = re.compile(r"^donchian_(high|low)_(\d+)$")
 _VOLSMA = re.compile(r"^vol_sma_(\d+)$")
+_EMASLOPE = re.compile(r"^ema_slope_(\d+)$")        # N-bar slope of EMA(N), as a fraction
+_BBWIDTH = re.compile(r"^bb_width$")                # (bb_upper - bb_lower) / bb_mid
+_ATRPCT = re.compile(r"^atr_pct$")                  # atr_14 / close  (volatility regime)
 
 
 # --------------------------------------------------------------------------- #
@@ -121,6 +124,15 @@ def _compute_column(df: pd.DataFrame, token: str) -> pd.Series:
     if token in ("bb_mid", "bb_upper", "bb_lower"):
         mid, upper, lower = ind.bollinger(df["close"], 20, 2.0)
         return {"bb_mid": mid, "bb_upper": upper, "bb_lower": lower}[token]
+    # regime operands (strictly causal: ewm/shift/rolling only) ------------- #
+    if (m := _EMASLOPE.match(token)):
+        e = ind.ema(df["close"], int(m.group(1)))
+        return (e - e.shift(5)) / e.shift(5)         # 5-bar fractional slope
+    if _BBWIDTH.match(token):
+        mid, upper, lower = ind.bollinger(df["close"], 20, 2.0)
+        return (upper - lower) / mid
+    if _ATRPCT.match(token):
+        return ind.atr(df, 14) / df["close"]
     raise KeyError(f"unknown indicator token {token!r} (see verdict.core.rules.SUPPORTED)")
 
 
