@@ -43,15 +43,31 @@ VERDICT: *generate many → walk-forward → cost-aware → pre-registered selec
 That rigor is ported from a production trading engine (see [`reference/legacy_nse/`](reference/legacy_nse/README.md))
 and is exactly what the judging rewards: real technical execution, an original take, and credibility.
 
-## Quickstart (Track 2 — reproduce the StrategySpec)
+## Reproduce the StrategySpec (Track 2 — one command, clean clone)
 
 ```bash
 pip install -r requirements.txt
-cp .env.example .env           # add CMC_MCP_API_KEY (or run keyless via ccxt + x402)
-python -m verdict.core.select --assets BNB/USDT,ETH/USDT --tf 4h    # prints an AgentVerdict JSON
+python -m verdict.core.select --assets BNB/USDT,CAKE/USDT,BTC/USDT,ETH/USDT --tf 4h
 ```
-The CMC Skill wrapper lives in [`skills/verdict-strategy/`](skills/verdict-strategy/) — `cp -r` it into
-any Anthropic-compatible agent and invoke `/verdict`.
+That's the whole reproducibility checkpoint: **no API key, no network** — it runs on committed
+historical candles under `verdict/core/_fixtures/candles/` and prints a schema-valid `AgentVerdict`
+JSON. Rerun it and you get byte-identical output (bar the `created_at` timestamp); the spec's numbers
+come from deterministic code, never an LLM guess. On the shipped fixtures the engine returns an honest
+**`NO_TRADE`** — nothing clears the pre-registered bar after DEX costs, and that null result *is* the
+deliverable's credibility.
+
+Want the equity / benchmark / drawdown PNGs alongside the JSON (and live CMC data if you set
+`CMC_MCP_API_KEY`)? Use the skill's entrypoint — same numbers, plus charts:
+
+```bash
+cp .env.example .env           # optional: add CMC_MCP_API_KEY for live regime context
+python skills/verdict-strategy/scripts/run.py \
+    --assets BNB/USDT,CAKE/USDT,BTC/USDT,ETH/USDT --tf 4h \
+    --out skills/verdict-strategy/examples
+```
+The CMC Skill itself lives in [`skills/verdict-strategy/`](skills/verdict-strategy/SKILL.md) — `cp -r`
+it into any Anthropic-compatible agent and invoke `/verdict`. Real sample outputs (JSON + curves) are
+in [`skills/verdict-strategy/examples/`](skills/verdict-strategy/examples/).
 
 ## Repo layout
 
