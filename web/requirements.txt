@@ -1,0 +1,4 @@
+# VERDICT demo web app — standalone deps (the dashboard backend).
+# The engine itself only needs the repo-root requirements.txt; these add the server.
+flask>=3.0
+flask-cors>=4.0

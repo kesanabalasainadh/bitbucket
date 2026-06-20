@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VERDICT — the honest crypto strategy engine</title>
+<meta name="description" content="VERDICT generates regime-gated crypto strategies, validates them with walk-forward out-of-sample windows under a DEX cost model, and issues an honest two-sided verdict — TRADE or NO_TRADE." />
+<link rel="stylesheet" href="/static/styles.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<script>document.documentElement.setAttribute('data-theme', localStorage.getItem('verdict-theme') || 'dark');</script>
+</head>
+<body>
+
+<!-- ░░ top bar ░░ -->
+<header class="topbar">
+  <div class="wrap">
+    <div class="brand"><span class="v">VER</span>DICT<span class="dot">.</span></div>
+    <div class="ticker">
+      <div class="t"><span class="k">BNB</span><span class="val" id="tk-price">—</span></div>
+      <div class="t"><span class="k">BTC.D</span><span class="val" id="tk-dom">—</span></div>
+      <div class="t"><span class="k">F&amp;G</span><span class="val" id="tk-fg">—</span></div>
+      <div class="t"><span class="k">Regime</span><span class="val" id="tk-regime">—</span></div>
+      <div class="t" style="flex-direction:row;align-items:center;gap:7px">
+        <span class="livedot" id="livedot"></span>
+        <span class="val mono" id="status-label" style="font-size:10px;letter-spacing:.12em">…</span>
+      </div>
+      <button id="theme-toggle" class="theme-btn tip tb" data-tip="Toggle light / dark" aria-label="Toggle theme">
+        <svg class="sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ░░ hero ░░ -->
+<div class="wrap">
+  <section class="hero">
+    <div class="hero-grid">
+      <div>
+        <div class="eyebrow reveal in">BNB HACK · Track 2 · Strategy Skill</div>
+        <h1 class="reveal in" style="margin-top:18px">Every trade<br>earns a <span class="accent">verdict.</span></h1>
+        <p class="lede reveal in">An LLM-authored crypto strategy engine that behaves like an honest quant —
+          it generates regime-gated candidate strategies, validates each with rolling walk-forward
+          out-of-sample windows under a real DEX cost model, and issues a verdict only when the
+          evidence survives a rule committed <em>before</em> the results.</p>
+        <div class="rule-chips reveal in">
+          <span class="chip">walk-forward <b>OOS</b></span>
+          <span class="chip">PancakeSwap <b>DEX costs</b></span>
+          <span class="chip">pre-registered <b>3-criterion rule</b></span>
+          <span class="chip">live <b>CoinMarketCap</b> regime</span>
+          <span class="chip">deterministic · <b id="tests-badge">tests pass</b></span>
+        </div>
+      </div>
+      <div class="reveal in">
+        <div class="stamp no_trade" id="hero-stamp">
+          <div class="ring"></div><div class="ring r2"></div>
+          <div class="core">
+            <div class="verdict-word" id="hero-verdict">NO_TRADE</div>
+            <div class="sub">real BSC majors · 4h · net of costs</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ░░ how to read this ░░ -->
+<div class="wrap">
+  <section class="reveal" style="padding-top:0">
+    <div class="howto">
+      <div class="label">How to read this</div>
+      <div class="item">
+        <span class="dtag live">LIVE</span>
+        <p><b>The market regime up top is real CoinMarketCap data</b>, fetched live every time you load this page. Watch VERDICT react to today's actual market.</p>
+      </div>
+      <div class="item">
+        <span class="dtag repro">REPRODUCIBLE</span>
+        <p><b>The verdicts below are computed by deterministic code</b> from committed historical data — a judge reproduces them exactly, with no API key and no network.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ░░ live CMC ░░ -->
+<div class="wrap">
+  <section class="reveal">
+    <div class="sec-head"><span class="section-num">01</span><h2 class="section-title">Live market regime</h2>
+      <span class="dtag live tip tb" data-tip="Real CoinMarketCap data, fetched live each time you load this page.">LIVE</span><span class="line"></span></div>
+    <div class="panel">
+      <div class="corner"></div>
+      <div class="cmc-grid">
+        <div class="metric"><span class="k">BNB / USDT</span><span class="v gold" id="m-price">—</span><span class="note">live CoinMarketCap quote</span></div>
+        <div class="metric"><span class="k tip tb" data-tip="Bitcoin's share of total crypto market cap. When it is high or rising, capital concentrates in BTC and altcoins tend to bleed.">BTC dominance<span class="info">i</span></span><span class="v" id="m-dom">—</span><span class="note" id="m-dom-note">—</span></div>
+        <div class="metric">
+          <span class="k tip tb" data-tip="CoinMarketCap's market-sentiment index, 0 (extreme fear) to 100 (extreme greed). ≤40 = fear → risk-off; ≥60 = greed → risk-on.">Fear &amp; Greed<span class="info">i</span></span>
+          <div class="gauge-wrap"><span class="v" id="m-fg">—</span><svg id="fg-gauge" width="120" height="74"></svg></div>
+          <span class="note" id="m-fg-note">—</span>
+        </div>
+        <div class="metric"><span class="k tip tb" data-tip="The market mode VERDICT derives from live CMC (Fear & Greed + BTC trend). It decides which strategies are even allowed to trade right now.">Derived regime<span class="info">i</span></span><span class="badge neutral" id="m-regime" style="margin-top:4px">—</span><span class="note" id="cmc-source" style="margin-top:10px">—</span></div>
+      </div>
+      <div class="reaction" id="cmc-reaction">…</div>
+    </div>
+  </section>
+</div>
+
+<!-- ░░ sentiment + decision matrix ░░ -->
+<div class="wrap">
+  <section class="reveal">
+    <div class="sec-head"><span class="section-num">02</span><h2 class="section-title">News sentiment, honestly weighted</h2>
+      <span class="dtag live tip tb" data-tip="News headlines + sentiment, ingested live when a news key is present (offline lexicon otherwise).">SIGNAL</span><span class="line"></span></div>
+    <div class="two">
+      <!-- news + sentiment -->
+      <div class="panel verdict-card">
+        <div class="vhead"><span class="faint mono" style="font-size:11px">market news ingested</span><span class="mono faint" style="font-size:10px" id="sent-source">—</span></div>
+        <div class="news" id="news-list"></div>
+        <div class="statline" style="margin-top:6px">
+          <div class="s"><span class="k tip" data-tip="Aggregate sentiment of recent headlines, from -1 (very bearish) to +1 (very bullish).">sentiment score</span><span class="val" id="sent-score">—</span></div>
+          <div class="s"><span class="k tip" data-tip="How much signal there is — based on headline count and freshness. Low confidence → sentiment barely moves the decision.">confidence</span><span class="val" id="sent-conf">—</span></div>
+        </div>
+      </div>
+      <!-- decision matrix -->
+      <div class="panel verdict-card">
+        <div class="vhead"><span class="tag" id="matrix-action" style="background:var(--bg-3);color:var(--ink)">—</span>
+          <span class="faint mono tip" data-tip="A weighted, explainable score over trend, cost, sentiment, risk and momentum. TRADE needs ≥70 AND the validator's approval; 55–70 → DCA; 40–55 → WAIT; below → NO_TRADE." style="font-size:11px">decision matrix · score <b id="matrix-score" style="color:var(--gold)">—</b></span></div>
+        <div class="mbars" id="matrix-bars"></div>
+        <p class="dim" style="font-size:12.5px">Sentiment is weighted at <b style="color:var(--gold)">≤ 15%</b> and is bounded — it can modulate a decision but can <b>never flip a NO_TRADE into a TRADE</b> (QA-verified).</p>
+        <p class="faint" style="font-size:11.5px">We tested news sentiment for real alpha: Sharpe +0.07, <span class="mono">p = 0.18</span> — <b>no evidence</b>. So we cap it rather than claim fake edge.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ░░ two-sided verdict ░░ -->
+<div class="wrap">
+  <section class="reveal">
+    <div class="sec-head"><span class="section-num">03</span><h2 class="section-title">The verdict is two-sided</h2>
+      <span class="dtag repro tip" data-tip="Computed from committed historical candles by deterministic code — byte-identical every run, no key, no network.">REPRODUCIBLE</span><span class="line"></span></div>
+    <div class="two">
+      <!-- TRADE -->
+      <div class="panel verdict-card">
+        <div class="vhead"><span class="tag trade tip" data-tip="A strategy that cleared all three pre-registered criteria out-of-sample and net of costs. VERDICT endorses it with full evidence.">TRADE</span><span class="faint mono" style="font-size:11px">controlled validated-edge regime</span></div>
+        <h3 id="trade-name">—</h3>
+        <div class="statline">
+          <div class="s"><span class="k tip" data-tip="Risk-adjusted return (return per unit of volatility), measured ONLY on out-of-sample data the strategy never saw while being built. ≥ 1.0 is the bar.">OOS Sharpe</span><span class="val good" id="t-sharpe">—</span></div>
+          <div class="s"><span class="k tip" data-tip="The strategy is replayed across many rolling time windows; this is the % of those out-of-sample windows where it beat simply buying and holding.">windows beat B&amp;H</span><span class="val good" id="t-windows">—</span></div>
+          <div class="s"><span class="k tip" data-tip="The median return across all the rolling out-of-sample test windows.">median OOS</span><span class="val" id="t-oos">—</span></div>
+          <div class="s"><span class="k">vs buy &amp; hold</span><span class="val" id="t-bench">—</span></div>
+        </div>
+        <svg class="chart" id="trade-chart"></svg>
+        <div class="legend"><span><i style="background:#f0b90b"></i>VERDICT strategy</span><span><i style="background:#58a6b8"></i>buy &amp; hold</span></div>
+        <p class="dim" style="font-size:13px">When a candidate clears all three pre-registered criteria out-of-sample and net of DEX costs, VERDICT endorses it — with the full audit trail.</p>
+      </div>
+      <!-- NO_TRADE -->
+      <div class="panel verdict-card">
+        <div class="vhead"><span class="tag no_trade tip" data-tip="VERDICT's honest null result: on these real coins, net of DEX trading costs, no strategy cleared the pre-registered bar — so it refuses to recommend one. A feature, not a bug.">NO_TRADE</span><span class="faint mono" style="font-size:11px">real BSC majors · 4h</span></div>
+        <h3>BNB · CAKE · BTC · ETH</h3>
+        <div class="statline" style="grid-template-columns:1fr 1fr">
+          <div class="s"><span class="k">candidates judged</span><span class="val" id="nt-count">—</span></div>
+          <div class="s"><span class="k">cleared the bar</span><span class="val bad">0</span></div>
+        </div>
+        <div class="reasons" id="nt-reasons"></div>
+        <p class="dim" style="font-size:13px" id="nt-summary">—</p>
+        <p class="faint" style="font-size:12px">A single-shot, cost-blind backtester would have shipped one of these as “market-beating.” VERDICT declines.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ░░ regime intelligence ░░ -->
+<div class="wrap">
+  <section class="reveal">
+    <div class="sec-head"><span class="section-num">04</span><h2 class="section-title">It knows <em>when</em> to act</h2>
+      <span class="dtag repro tip" data-tip="Deterministic engine output on controlled, RNG-free regime markets.">REPRODUCIBLE</span><span class="line"></span></div>
+    <div class="panel">
+      <table class="matrix" id="regime-matrix"></table>
+      <p class="grid-caption">Each archetype trades <b>only</b> in the regime where it has edge and stands aside elsewhere.
+        Note the <b>downtrend</b> column — every archetype declines, including mean-reversion: <b>no knife-catching</b>.
+        <span class="faint">(controlled, RNG-free regime markets, zero cost — illustrative)</span></p>
+    </div>
+  </section>
+</div>
+
+<!-- ░░ walk-forward ░░ -->
+<div class="wrap">
+  <section class="reveal">
+    <div class="sec-head"><span class="section-num">05</span><h2 class="section-title">The credibility engine</h2>
+      <span class="dtag repro tip" data-tip="Computed from committed historical candles by deterministic code.">REPRODUCIBLE</span>
+      <span class="info tip" data-tip="Walk-forward: instead of one backtest, the strategy is tested on many consecutive out-of-sample windows. Surviving one lucky window is noise; surviving most is an edge.">i</span><span class="line"></span></div>
+    <div class="panel">
+      <div class="corner"></div>
+      <p class="dim" style="font-size:14px;margin-bottom:6px">Rolling out-of-sample walk-forward windows for the closest real-majors candidate
+        (<span class="mono" id="wf-asset"></span>). A single backtest is easy to overfit; a strategy that only survives one lucky window is noise.</p>
+      <div class="wf-strip" id="wf-strip"></div>
+      <div class="wf-foot">
+        <span id="wf-pass">—</span><span id="wf-sharpe">—</span>
+        <span class="faint">gold = beat buy&amp;hold that window · grey = missed</span>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ░░ the rule ░░ -->
+<div class="wrap">
+  <section class="reveal">
+    <div class="sec-head"><span class="section-num">06</span><h2 class="section-title">Committed before the results</h2>
+      <span class="info tip" data-tip="Pre-registered: the selection rule is committed in code BEFORE any results are seen, so it cannot be tuned to fit. A judge can audit it in verdict/core/select.py.">i</span><span class="line"></span></div>
+    <div class="crit">
+      <div class="panel c"><div class="n">01</div><div class="txt"><b>Beats benchmark net of costs.</b> Median out-of-sample return exceeds buy-&-hold over the same rolling windows.</div></div>
+      <div class="panel c"><div class="n">02</div><div class="txt"><b>Consistent.</b> Beat buy-&-hold in at least <b>60%</b> of OOS windows — not one lucky run.</div></div>
+      <div class="panel c"><div class="n">03</div><div class="txt"><b>Risk-adjusted.</b> Sharpe <b>≥ 1.0</b> and max drawdown <b>≤ 25%</b>. Among passers, the highest risk-score wins.</div></div>
+    </div>
+  </section>
+</div>
+
+<!-- ░░ footer ░░ -->
+<div class="wrap">
+  <footer>
+    <div class="eyebrow">Reproduce it — no key, no network</div>
+    <div class="repro" style="margin-top:14px">
+      <span class="p">$</span> <span class="c">git clone https://github.com/kesanabalasainadh/bitbucket &amp;&amp; cd bitbucket</span><br>
+      <span class="p">$</span> <span class="c">pip install -r requirements.txt</span><br>
+      <span class="p">$</span> <span class="c">python -m verdict.core.select --assets BNB/USDT,CAKE/USDT,BTC/USDT,ETH/USDT --tf 4h</span><br>
+      <span class="faint"># or this dashboard: pip install -r web/requirements.txt &amp;&amp; python web/server.py</span>
+    </div>
+    <div class="foot-row">
+      <span class="faint mono" style="font-size:11px">Deterministic · byte-reproducible (bar the timestamp) · every number from code.</span>
+      <div class="foot-links">
+        <a href="https://github.com/kesanabalasainadh/bitbucket" target="_blank">repository</a>
+        <a href="/api/verdict" target="_blank">/api/verdict</a>
+        <a href="/api/live-cmc" target="_blank">/api/live-cmc</a>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
