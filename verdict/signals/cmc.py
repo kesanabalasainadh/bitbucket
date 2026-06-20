@@ -134,17 +134,19 @@ class CMCClient:
 
     @classmethod
     def from_env(cls, env=None) -> "CMCClient":
-        """Default MCP, fall back to REST, by which key is present. No key -> offline."""
+        """Prefer REST (verified working on the Basic tier); the MCP gateway is
+        WAF-gated for many accounts (400 on JSON-RPC POST), so REST is the reliable
+        live route. Fall back to MCP if only an MCP key is present, else offline."""
         try:
             from dotenv import load_dotenv
             load_dotenv()
         except ImportError:
             pass
         env = env if env is not None else os.environ
-        if env.get("CMC_MCP_API_KEY"):
-            return cls(kind="mcp", api_key=env["CMC_MCP_API_KEY"])
         if env.get("CMC_PRO_API_KEY"):
             return cls(kind="rest", api_key=env["CMC_PRO_API_KEY"])
+        if env.get("CMC_MCP_API_KEY"):
+            return cls(kind="mcp", api_key=env["CMC_MCP_API_KEY"])
         return cls(offline=True)
 
     def _fetch_with_fallback(self, resource: str, params: dict) -> dict:

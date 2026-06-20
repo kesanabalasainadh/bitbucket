@@ -61,7 +61,14 @@ def _btc_trend_up(client: "CMCClient") -> Optional[bool]:
     Returns ``None`` (silent) when BTC technicals are unavailable so the regime
     rule degrades to Fear&Greed only instead of crashing — the failure-handling
     contract (partial data still yields a Signal).
+
+    When the client is in a *degraded* live state (a live endpoint fell back to a
+    fixture), the technicals would be stale — so we stay silent and let the live
+    Fear&Greed decide, rather than diluting it with fixture price-trend. (Pure
+    offline mode is not degraded, so it still uses fixture trend deterministically.)
     """
+    if getattr(client, "degraded", False):
+        return None
     try:
         ta = client.technicals("BTC/USDT")
     except Exception:

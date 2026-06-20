@@ -34,6 +34,8 @@ REST_HEADER = "X-CMC_PRO_API_KEY"
 MCP_URL = "https://mcp.coinmarketcap.com/mcp"
 REST_BASE = "https://pro-api.coinmarketcap.com"
 X402_URL = "https://mcp.coinmarketcap.com/x402/mcp"
+# Fear & Greed lives on its own REST endpoint (not part of global-metrics).
+FEAR_GREED_PATH = "/v3/fear-and-greed/latest"
 
 # logical resource -> MCP tool id (confirm via tools/list if one is rejected)
 MCP_TOOLS = {
@@ -209,7 +211,27 @@ class RESTTransport:
             resp.raise_for_status()
             return resp.json()
 
-        return retry(call, attempts=self.attempts)
+        env = retry(call, attempts=self.attempts)
+        if resource == "global_metrics":
+            env = self._augment_fear_greed(env)
+        return env
+
+    def _augment_fear_greed(self, env: dict) -> dict:
+        """Merge the separate Fear & Greed endpoint into the global-metrics envelope.
+
+        global-metrics carries BTC dominance but NOT Fear & Greed (that's a distinct
+        /v3 endpoint). Best-effort: a failure here still leaves btc_dominance intact.
+        """
+        import httpx
+        try:
+            resp = httpx.get(self.base + FEAR_GREED_PATH, headers=self.headers, timeout=self.timeout)
+            resp.raise_for_status()
+            value = (resp.json().get("data") or {}).get("value")
+            if value is not None and isinstance(env.get("data"), dict):
+                env["data"]["fear_and_greed"] = {"value": value}
+        except Exception:
+            pass
+        return env
 
     @staticmethod
     def _query(resource: str, params: dict) -> dict:
