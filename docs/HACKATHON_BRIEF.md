@@ -59,9 +59,13 @@ spec — NOT a live agent**. No wallet, no chain, no execution.
 - **Deadline = Jun 21 lock.** The Jun 22–28 live window does **NOT** apply to Track 2.
 
 ### Special prizes ($6k, stackable with a main placement)
-- **Best Use of CoinMarketCap Data & Signal** — **$2,000** ← **very winnable for us**
-- **Best Use of Trust Wallet Agent Kit** — **$2,000** (Track 1 only)
-- **Best Use of BNB AI Agent SDK** — **$2,000** (Track 1 only)
+- **Best Use of Agent Hub** (CoinMarketCap Data & Signal) — **$2,000** — **both tracks** ← **very winnable for us**
+- **Best Use of Trust Wallet Agent Kit** — **$2,000** — **Track 1 only** (we don't build TWAK; not a target)
+- **Best Use of BNB AI Agent SDK** — **$2,000** — **both tracks** ← real on-chain ERC-8004 identity already shipped
+
+> **Correction (2026-06-20, from the official special-prize text):** Agent Hub **and** BNB AI Agent SDK
+> are **both-tracks** awards. Only **TWAK is Track-1-locked.** So **2 of 3 specials are open to our
+> Track-2 entry** — claim both (CMC depth + on-chain agent identity), don't chase TWAK.
 
 > **Stacking bonus (both tracks):** must use ≥1 sponsor capability; projects stacking **all three**
 > (CMC signal + TWAK execution + BNB venue) **score highest with judges.**

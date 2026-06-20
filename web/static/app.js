@@ -151,6 +151,11 @@ function render(d) {
     $("#onchain-id").textContent = oc.agent_id;
     const link = $("#onchain-link");
     if (link && oc.explorer_tx) link.href = oc.explorer_tx;
+    const att = oc.attestation, attEl = $("#onchain-attest");
+    if (att && att.tx_hash && attEl) {
+      attEl.innerHTML = `latest verdict <b>${att.verdict || "—"}</b> attested on-chain (set_metadata) · ` +
+        `<a href="${att.explorer_tx}" target="_blank" rel="noopener" style="color:var(--gold)">view tx ↗</a>`;
+    }
   } else {
     const foot = $("#onchain-foot"); if (foot) foot.textContent = "ERC-8004 identity — run python -m verdict.identity.register";
   }

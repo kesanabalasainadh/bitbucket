@@ -137,15 +137,25 @@ the backtest — identical inputs give identical specs.
 
 ## On-chain agent identity (BNB AI Agent SDK)
 
-VERDICT is a **registered on-chain agent**. Using the **BNB AI Agent SDK** (`bnbagent`) we minted an
-**ERC-8004 agent identity** on BNB Smart Chain testnet — gas-free via the MegaFuel paymaster — so the
-strategy engine has a verifiable, discoverable on-chain identity (real on-chain proof, not cosmetic):
+VERDICT uses the **BNB AI Agent SDK** (`bnbagent`) across **two ERC-8004 surfaces**, not one — real,
+verifiable on-chain proof, gas-free via the MegaFuel paymaster:
 
+**1. Agent identity** — minted an **ERC-8004 identity** on BNB Smart Chain testnet, so the engine has a
+discoverable on-chain identity.
 - **agentId `1466`** · registry `0x8004a818…` · wallet `0x519556…`
 - tx: <https://testnet.bscscan.com/tx/0x1d4ba443f72b84ce47e991bb7a00721acfe5b3d3518a506adfe63ea2430be8b4>
-- reproduce: `python -m verdict.identity.register` (`verdict/identity/`, proof in `submission/onchain_identity.json`)
+- reproduce: `python -m verdict.identity.register` (proof in `submission/onchain_identity.json`)
 
-This targets the **"Best Use of BNB AI Agent SDK"** special prize, stackable with a Track-2 placement.
+**2. On-chain verdict attestation** — the agent writes each verdict to its own ERC-8004 metadata via
+**`set_metadata`**: a content-addressed `keccak256` hash of the canonical AgentVerdict (timestamps
+scrubbed), so the strategy output is **tamper-evident and auditable on-chain** — tied to the agent's
+identity. An attestation, not a trade.
+- latest: `NO_TRADE` · hash `0x19b55e2f…` · key `verdict.latest`
+- tx: <https://testnet.bscscan.com/tx/0xa4c26cc6f95daa03f52bbbbc61cca74867ad54157dec841dc67191c70d0041fa>
+- reproduce: `python -m verdict.identity.attest` (proof in `submission/onchain_attestation.json`)
+
+This targets the **"Best Use of BNB AI Agent SDK"** special prize (a **both-tracks** award), stackable
+with a Track-2 placement — two SDK surfaces, both with verifiable BSC-testnet transactions.
 
 ## Track 1 (stretch — agent layer scaffolded, live execution is future work)
 

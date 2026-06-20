@@ -195,12 +195,28 @@ def sentiment_block():
 
 
 def onchain_identity():
-    """VERDICT's committed on-chain ERC-8004 identity proof (BNB AI Agent SDK)."""
+    """VERDICT's committed on-chain ERC-8004 proof (BNB AI Agent SDK): the agent
+    identity, plus the latest verdict attested on-chain via set_metadata — a second
+    SDK surface that makes the strategy output auditable on-chain."""
     try:
         from verdict.identity.register import load_proof
-        return load_proof() or {}
+        proof = dict(load_proof() or {})
     except Exception:
-        return {}
+        proof = {}
+    try:
+        att_path = Path(__file__).resolve().parents[1] / "submission" / "onchain_attestation.json"
+        if att_path.exists():
+            att = json.loads(att_path.read_text(encoding="utf-8"))
+            proof["attestation"] = {
+                "verdict": att.get("verdict"),
+                "verdict_hash": att.get("verdict_hash"),
+                "metadata_key": att.get("metadata_key"),
+                "tx_hash": att.get("tx_hash"),
+                "explorer_tx": att.get("explorer_tx"),
+            }
+    except Exception:
+        pass
+    return proof
 
 
 def live_cmc():

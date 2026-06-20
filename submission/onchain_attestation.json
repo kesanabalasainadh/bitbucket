@@ -1,0 +1,20 @@
+{
+  "schema": "verdict-attestation/v1",
+  "verdict": "NO_TRADE",
+  "verdict_hash": "0x19b55e2fe41d985be83149ac6341119edb4fa1640c66fcf95009fbd81e0def43",
+  "assets": "BNB/USDT,CAKE/USDT,BTC/USDT,ETH/USDT",
+  "timeframe": "4h",
+  "candidates": 12,
+  "rule": "pre-registered 3-criterion walk-forward, net of PancakeSwap costs",
+  "attested_at": "2026-06-20T19:34:49+00:00",
+  "sdk": "BNB AI Agent SDK (bnbagent)",
+  "standard": "ERC-8004 metadata (set_metadata)",
+  "network": "bsc-testnet",
+  "chain_id": 97,
+  "agent_id": 1466,
+  "wallet": "0x519556511047cB06eff0060899Fd9A4770793E20",
+  "metadata_key": "verdict.latest",
+  "onchain_value": "verdict-attestation/v1|NO_TRADE|0x19b55e2fe41d985be83149ac6341119edb4fa1640c66fcf95009fbd81e0def43|BNB/USDT,CAKE/USDT,BTC/USDT,ETH/USDT@4h|2026-06-20T19:34:49+00:00",
+  "tx_hash": "0xa4c26cc6f95daa03f52bbbbc61cca74867ad54157dec841dc67191c70d0041fa",
+  "explorer_tx": "https://testnet.bscscan.com/tx/0xa4c26cc6f95daa03f52bbbbc61cca74867ad54157dec841dc67191c70d0041fa"
+}
