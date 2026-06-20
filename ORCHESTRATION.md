@@ -34,6 +34,12 @@ the $24k pool plus the TWAK/BNB-SDK special prizes. Every layer leans on CMC, so
 `verdict/schema.py` — to change them, edit `schema.py` + `CONTRACTS.md` in one commit and announce.
 Each agent works on its **own git branch** `wp-N-<name>`; integration happens via PR/merge into `main`.
 
+**Two lanes (shared repo, ~2x throughput):** the **build lane** (these WP agents) implements features;
+a **human teammate runs the QA lane** — testing, finding bugs, fixing them on the other end. Don't
+duplicate the QA lane: if you hit a bug outside your WP, flag it instead of racing to fix the same file.
+`main` is concurrent — pull before merge, merge cleanly, never force-push shared branches. When you
+change a shared contract, announce it so the QA tests track it. (Full rules in `CLAUDE.md`.)
+
 ---
 
 ## 2. Dependency graph & critical path
