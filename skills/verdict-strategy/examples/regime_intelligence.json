@@ -1,0 +1,86 @@
+[
+  {
+    "market": "uptrend",
+    "expectation": "momentum acts",
+    "archetypes": {
+      "momentum": {
+        "trades": 38,
+        "return_pct": 1686.0,
+        "sharpe": 79.73
+      },
+      "meanrev": {
+        "trades": 0,
+        "return_pct": 0.0,
+        "sharpe": 0.0
+      },
+      "breakout": {
+        "trades": 0,
+        "return_pct": 0.0,
+        "sharpe": 0.0
+      }
+    }
+  },
+  {
+    "market": "range",
+    "expectation": "mean-reversion acts",
+    "archetypes": {
+      "momentum": {
+        "trades": 0,
+        "return_pct": 0.0,
+        "sharpe": 0.0
+      },
+      "meanrev": {
+        "trades": 102,
+        "return_pct": 272.8,
+        "sharpe": 12.01
+      },
+      "breakout": {
+        "trades": 0,
+        "return_pct": 0.0,
+        "sharpe": 0.0
+      }
+    }
+  },
+  {
+    "market": "downtrend",
+    "expectation": "ALL stand aside (no knife-catch)",
+    "archetypes": {
+      "momentum": {
+        "trades": 0,
+        "return_pct": 0.0,
+        "sharpe": 0.0
+      },
+      "meanrev": {
+        "trades": 0,
+        "return_pct": 0.0,
+        "sharpe": 0.0
+      },
+      "breakout": {
+        "trades": 0,
+        "return_pct": 0.0,
+        "sharpe": 0.0
+      }
+    }
+  },
+  {
+    "market": "breakout",
+    "expectation": "breakout acts",
+    "archetypes": {
+      "momentum": {
+        "trades": 32,
+        "return_pct": 225.4,
+        "sharpe": 19.48
+      },
+      "meanrev": {
+        "trades": 32,
+        "return_pct": 9.4,
+        "sharpe": 7.09
+      },
+      "breakout": {
+        "trades": 20,
+        "return_pct": 119.1,
+        "sharpe": 16.7
+      }
+    }
+  }
+]

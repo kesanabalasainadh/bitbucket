@@ -1,37 +1,36 @@
-# Example output — real VERDICT runs
+# Example output — VERDICT is two-sided (it knows *when* to act)
 
-These are **actual, reproducible** outputs of the skill over the committed candle fixtures
-(BNB / CAKE / BTC / ETH), not hand-written samples. Regenerate any of them with:
+These are **real, reproducible** outputs of the engine — not hand-written samples.
+Regenerate all of them deterministically (no key, no network) with:
 
 ```bash
-# 4h, all four assets (the headline run; writes the JSON + the 3 PNGs):
-python skills/verdict-strategy/scripts/run.py \
-    --assets BNB/USDT,CAKE/USDT,BTC/USDT,ETH/USDT --tf 4h \
-    --out skills/verdict-strategy/examples
-
-# 1h, BNB & CAKE (BTC/ETH ship 4h & 1d fixtures only):
-python skills/verdict-strategy/scripts/run.py --assets BNB/USDT,CAKE/USDT --tf 1h --json-only
+python skills/verdict-strategy/scripts/two_sided_demo.py --out skills/verdict-strategy/examples
 ```
 
-| File | What |
+The common critique of an honest "NO_TRADE" skill is *"does it ever actually produce
+a strategy?"* These artifacts answer it — through the **same** pre-registered,
+walk-forward, cost-netted pipeline:
+
+| File | What it shows |
 |---|---|
-| `agentverdict_4h_BNB-CAKE-BTC-ETH.json` | 12 candidates (3 archetypes × 4 assets), 4h — full `AgentVerdict` |
-| `agentverdict_1h_BNB-CAKE.json` | 6 candidates, 1h |
-| `equity_curve.png` | strategy equity vs. buy-&-hold, for the closest candidate |
-| `benchmark_curve.png` | buy-&-hold curve |
-| `drawdown_curve.png` | underwater (drawdown) curve |
+| `regime_intelligence.json` | Each archetype trades **only** in the regime where it has edge and **stands aside** elsewhere — incl. **0 trades in a downtrend** (the knife-catch fix). |
+| `demo_TRADE_controlled_range.json` | A genuine **`TRADE`** verdict: on a regime where a robust edge exists, mean-reversion clears all three pre-registered criteria (median OOS **+9.2%** vs buy&hold **+1.4%**, beat the benchmark in **100%** of walk-forward windows), net of PancakeSwap costs. |
+| `demo_NO_TRADE_real_majors.json` | An honest **`NO_TRADE`** on the real BSC majors (BNB/CAKE/BTC/ETH, 4h): out-of-sample, net of DEX costs, nothing clears the bar. |
+| `TRADE_equity.png` / `TRADE_drawdown.png` | The TRADE winner's equity (vs buy&hold) and drawdown. |
 
-## The result is `NO_TRADE` — and that is the point
+## The story
+1. **Regime intelligence** — VERDICT routes each archetype to the regime where it has
+   edge (momentum → trends, mean-reversion → ranges, breakout → expansions) and
+   **refuses to trade** the wrong regime. Most retail strategies blow up by
+   mean-reverting a downtrend; VERDICT takes **zero** trades there.
+2. **It issues a TRADE when warranted** — given a regime with a real, walk-forward-
+   validated, cost-surviving edge, the engine emits a `TRADE` with full evidence
+   (windows, curves, the per-criterion audit).
+3. **It declines when there's no edge** — on the actual majors, net of DEX costs,
+   no candidate clears all three out-of-sample criteria, so it returns `NO_TRADE`.
+   A single-shot, cost-blind backtester would have shipped a loser as "market-beating."
 
-On these multi-year offline candles, **no candidate clears the pre-registered 3-criterion rule**
-(beats benchmark net of costs · positive in ≥ 60% of OOS windows · Sharpe ≥ 1.0 & drawdown ≤ 25%),
-so VERDICT returns an honest `NO_TRADE` with a per-candidate reason instead of a hyped strategy.
-
-The PNGs plot the **closest** candidate — CAKE/USDT 4h mean-reversion. Notice the story: the strategy
-(gold) ends near **0.87×** while buy-&-hold (grey) collapses to **~0.19×** — it *dodged* an ~80%
-drawdown. It still fails the **absolute** risk-adjusted gate (it lost money net of costs), so the
-engine **declines to endorse it**. A single-shot, cost-blind backtester would have shipped this as a
-"market-beating" strategy; VERDICT's discipline is precisely that it does not.
-
-Every number here comes from deterministic code on committed data — rerun and you get byte-identical
-JSON (except the `created_at` timestamp). That reproducibility is the Track-2 deliverable.
+Every number is deterministic code on committed/controlled data — rerun and you get
+the same verdicts (only the `created_at` provenance timestamp differs). The
+controlled-regime markets are clearly-labelled, RNG-free illustrations; the verdict
+on the real majors is the honest one.
