@@ -3,7 +3,7 @@
 **Goal:** Prove the rigor, reproducibility, and honesty of VERDICT.
 
 ## 0:00 - Introduction & The Problem
-- **Visual**: Show the VERDICT logo and BUIDL page.
+- **Visual**: Open the live dashboard — https://kesanabalasainadh.github.io/bitbucket/ — then the BUIDL page.
 - **Script**: "Welcome to VERDICT. Most AI trading agents use a single prompt and one lucky backtest window to generate 'market-beating' strategies. VERDICT is built to be the opposite: an honest quant that treats strategy generation as rigorous research."
 
 ## 0:30 - The Data Engine (CoinMarketCap)

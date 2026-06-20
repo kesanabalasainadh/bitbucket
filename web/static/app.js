@@ -9,7 +9,13 @@ const fmt = (n, d = 2) => (n === null || n === undefined) ? "—" : Number(n).to
 const pct = (n, d = 1) => (n === null || n === undefined) ? "—" : (n >= 0 ? "+" : "") + Number(n).toFixed(d) + "%";
 
 async function loadData() {
-  for (const url of ["/api/verdict", "./verdict.json", "../data/verdict.json"]) {
+  // On a static host (file:// or GitHub Pages) there is no Flask API, so skip the
+  // /api probe to keep the judge-facing console clean; serve the committed snapshot.
+  const staticHost = location.protocol === "file:" || /\.github\.io$/.test(location.hostname);
+  const sources = staticHost
+    ? ["./verdict.json", "../data/verdict.json"]
+    : ["/api/verdict", "./verdict.json", "../data/verdict.json"];
+  for (const url of sources) {
     try {
       const r = await fetch(url, { cache: "no-store" });
       if (r.ok) { const d = await r.json(); d._src = url; return d; }
