@@ -10,7 +10,9 @@ JSON never leaves this module. CLI:  python -m verdict.signals.cmc --symbol BNB/
 """
 from __future__ import annotations
 
+import argparse
 import os
+import sys
 from typing import Optional
 
 from verdict.schema import OHLCVSeries
