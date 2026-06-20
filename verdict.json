@@ -11,8 +11,8 @@
   },
   "live_cmc": {
     "symbol": "BNB/USDT",
-    "price": 585.41,
-    "btc_dominance": 58.39,
+    "price": 585.29,
+    "btc_dominance": 58.38,
     "fear_greed": 21,
     "regime": "risk_off",
     "source": "cmc-rest-degraded",
@@ -30,13 +30,20 @@
     "tx_hash": "0x1d4ba443f72b84ce47e991bb7a00721acfe5b3d3518a506adfe63ea2430be8b4",
     "registry": "0x8004a818bfb912233c491871b3d84c89a494bd9e",
     "explorer_tx": "https://testnet.bscscan.com/tx/0x1d4ba443f72b84ce47e991bb7a00721acfe5b3d3518a506adfe63ea2430be8b4",
-    "gas": "sponsored (MegaFuel paymaster) \u2014 gas-free testnet"
+    "gas": "sponsored (MegaFuel paymaster) \u2014 gas-free testnet",
+    "attestation": {
+      "verdict": "NO_TRADE",
+      "verdict_hash": "0x19b55e2fe41d985be83149ac6341119edb4fa1640c66fcf95009fbd81e0def43",
+      "metadata_key": "verdict.latest",
+      "tx_hash": "0xa4c26cc6f95daa03f52bbbbc61cca74867ad54157dec841dc67191c70d0041fa",
+      "explorer_tx": "https://testnet.bscscan.com/tx/0xa4c26cc6f95daa03f52bbbbc61cca74867ad54157dec841dc67191c70d0041fa"
+    }
   },
   "sentiment": {
     "sentiment_score": -0.25,
-    "confidence": 0.143,
+    "confidence": 0.141,
     "headline_count": 4,
-    "freshness": 0.29,
+    "freshness": 0.28,
     "source": "offline",
     "headlines": [
       "BNB Chain Launches AI Agent SDK on BSC Mainnet",
@@ -83,7 +90,7 @@
       "components": {
         "trend": 0.5,
         "cost": 1.0,
-        "sentiment": 0.4822,
+        "sentiment": 0.4824,
         "risk": 0.0,
         "momentum": 0.0
       },
