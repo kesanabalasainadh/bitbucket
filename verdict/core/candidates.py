@@ -72,48 +72,60 @@ def generate_candidates(
         base.update(kw)
         return StrategySpec(**base)
 
-    # 1) Momentum / trend-pullback ----------------------------------------- #
-    trend_anchor = "ema_200" if risk_off else "ema_100"
+    # 1) Momentum / trend-following ---------------------------------------- #
+    # Ride a confirmed bullish EMA stack while momentum is positive; exit when the
+    # short-term trend breaks. NO upper RSI cap — in a real uptrend RSI sits well
+    # above 65, so capping it (the old "rsi in [40,65]") made the archetype unable
+    # to enter a trend at all. Strength is the signal here, not a fade.
+    mom_entry = [
+        "close > ema_50",
+        "ema_20 > ema_50",
+        "ema_50 > ema_100",
+    ]
+    if risk_off:
+        mom_entry.append("ema_100 > ema_200")          # full stack in risk-off
+    mom_entry += ["macd_hist > 0", f"rsi_14 > {55 if risk_off else 50}"]
     momentum = spec(
         id=f"momentum-{slug}-{tf}",
-        name=f"{symbol} {tf} Momentum Pullback",
-        description="EMA-stack uptrend + shallow pullback into EMA20, MACD momentum "
-                    "resuming, RSI healthy; ATR risk bracket.",
-        horizon="swing (3-10 bars)", lookback=210 if risk_off else 120,
-        indicators=["EMA(20)", "EMA(50)", f"EMA({200 if risk_off else 100})",
-                    "MACD(12,26,9)", "RSI(14)", "ATR(14)"],
-        entry_rules=[
-            f"close > {trend_anchor}",
-            "ema_20 > ema_50",
-            "abs(close-ema_20)/ema_20 <= 0.04",
-            "macd_hist rising",
-            "rsi_14 in [40,65]",
-        ],
-        exit_rules=["rsi_14 > 78", "max_hold=10 bars"],
-        stop_loss="1.5 * ATR(14)", take_profit="3.0 * ATR(14)",
-        reasoning="Trend-pullback: buy shallow dips inside a confirmed uptrend "
-                  "(EMA stack) when MACD histogram turns back up. " + ctx,
+        name=f"{symbol} {tf} Trend Momentum",
+        description="Ride a confirmed bullish EMA stack (20>50>100) with positive MACD "
+                    "momentum; hold until the 20/50 stack breaks. ATR risk bracket.",
+        horizon="trend-follow (10-40 bars)", lookback=210 if risk_off else 120,
+        indicators=["EMA(20)", "EMA(50)", "EMA(100)"]
+        + (["EMA(200)"] if risk_off else [])
+        + ["MACD(12,26,9)", "RSI(14)", "ATR(14)"],
+        entry_rules=mom_entry,
+        exit_rules=["ema_20 crosses_below ema_50", "max_hold=40 bars"],
+        stop_loss="2.0 * ATR(14)", take_profit="8.0 * ATR(14)",
+        reasoning="Trend momentum: enter a confirmed bullish EMA stack with a positive "
+                  "MACD histogram and RSI above the midline, and ride it until the 20/50 "
+                  "stack rolls over. No upper RSI cap — momentum is the thesis. " + ctx,
     )
 
-    # 2) Mean-reversion (RSI / Bollinger) ---------------------------------- #
-    rsi_floor = 30 if risk_off else 35
+    # 2) Mean-reversion (Bollinger / RSI) ---------------------------------- #
+    # Buy the reversion TURN — price reclaiming the lower Bollinger band from
+    # oversold — not the falling knife. The old rule required "close > ema_200"
+    # together with deep-oversold, which is self-contradictory (a trough sits below
+    # the long-term mean): it admitted only early-down-leg entries and was stopped
+    # out ~100% of the time. Entering on the cross back above the band buys the
+    # bounce, and we exit at the band mean.
+    rsi_ceiling = 45 if risk_off else 50
     meanrev = spec(
         id=f"meanrev-{slug}-{tf}",
-        name=f"{symbol} {tf} Mean-Reversion (RSI/Bollinger)",
-        description="Fade capitulation below the lower Bollinger band while above the "
-                    "long-term trend; exit on reversion to the mean.",
-        horizon="swing (2-8 bars)", lookback=210,
-        indicators=["BollingerBands(20,2)", "RSI(14)", "EMA(200)", "ATR(14)"],
+        name=f"{symbol} {tf} Mean-Reversion (Bollinger/RSI)",
+        description="Buy the reversion turn — price reclaiming the lower Bollinger band "
+                    "from oversold — and exit back at the band mean.",
+        horizon="swing (2-12 bars)", lookback=120,
+        indicators=["BollingerBands(20,2)", "RSI(14)", "ATR(14)"],
         entry_rules=[
-            "close < bb_lower",
-            f"rsi_14 < {rsi_floor}",
-            "close > ema_200",
+            "close crosses_above bb_lower",
+            f"rsi_14 < {rsi_ceiling}",
         ],
-        exit_rules=["rsi_14 > 55", "max_hold=8 bars"],
+        exit_rules=["close crosses_above bb_mid", "rsi_14 > 60", "max_hold=12 bars"],
         stop_loss="1.5 * ATR(14)", take_profit="2.5 * ATR(14)",
-        reasoning="Mean-reversion: buy oversold dislocations (below lower band + low "
-                  "RSI) but only with the long-term trend (above EMA200); take profit "
-                  "as price reverts toward the mean. " + ctx,
+        reasoning="Mean-reversion: wait for price to reclaim the lower Bollinger band "
+                  "from oversold (the turn, not the knife), then exit as it reverts to "
+                  "the band mean. " + ctx,
     )
 
     # 3) Breakout (Donchian / volume) -------------------------------------- #
