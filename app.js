@@ -7,6 +7,11 @@ const $ = (s, r = document) => r.querySelector(s);
 const el = (t, c) => { const e = document.createElement(t); if (c) e.className = c; return e; };
 const fmt = (n, d = 2) => (n === null || n === undefined) ? "—" : Number(n).toFixed(d);
 const pct = (n, d = 1) => (n === null || n === undefined) ? "—" : (n >= 0 ? "+" : "") + Number(n).toFixed(d) + "%";
+const shortDate = (iso) => {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return isNaN(d) ? "" : d.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+};
 
 async function loadData() {
   // On a static host (file:// or GitHub Pages) there is no Flask API, so skip the
@@ -195,13 +200,27 @@ function fgLabel(v) {
 
 function renderSentiment(s) {
   if (s.error || !s.matrix) { return; }
-  $("#sent-source").textContent = (s.source || "—") + " · " + (s.headline_count ?? 0) + " headlines";
+  const srcLabel = s.source === "offline" ? "committed snapshot" : (s.source || "—");
+  $("#sent-source").textContent = srcLabel + " · " + (s.headline_count ?? 0) + " headlines";
   $("#sent-score").textContent = (s.sentiment_score >= 0 ? "+" : "") + fmt(s.sentiment_score, 2);
   $("#sent-conf").textContent = fmt(s.confidence, 2);
   const list = $("#news-list"); list.innerHTML = "";
-  (s.headlines || []).forEach(h => {
+  const items = (s.headline_items && s.headline_items.length)
+    ? s.headline_items
+    : (s.headlines || []).map(t => ({ title: t }));
+  items.forEach(h => {
     const cls = s.sentiment_score > 0.05 ? "pos" : (s.sentiment_score < -0.05 ? "neg" : "neu");
-    const row = el("div", "h"); row.innerHTML = `<span class="dot ${cls}"></span><span>${h}</span>`;
+    const row = el("div", "h");
+    const title = h.title || "";
+    const titleHtml = h.url
+      ? `<a class="hl" href="${h.url}" target="_blank" rel="noopener noreferrer">${title} <span class="ext">↗</span></a>`
+      : `<span>${title}</span>`;
+    const meta = [];
+    if (h.source) meta.push(`<span class="src">${h.source}</span>`);
+    const dt = shortDate(h.published_at);
+    if (dt) meta.push(`<span class="date">${dt}</span>`);
+    row.innerHTML = `<span class="dot ${cls}"></span><span class="hl-line">${titleHtml}` +
+      (meta.length ? `<span class="meta">${meta.join("")}</span>` : "") + "</span>";
     list.appendChild(row);
   });
   // matrix
