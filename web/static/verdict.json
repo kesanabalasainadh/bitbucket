@@ -11,8 +11,8 @@
   },
   "live_cmc": {
     "symbol": "BNB/USDT",
-    "price": 585.33,
-    "btc_dominance": 58.37,
+    "price": 585.41,
+    "btc_dominance": 58.39,
     "fear_greed": 21,
     "regime": "risk_off",
     "source": "cmc-rest-degraded",
@@ -33,19 +33,46 @@
     "gas": "sponsored (MegaFuel paymaster) \u2014 gas-free testnet"
   },
   "sentiment": {
-    "sentiment_score": 0.111,
-    "confidence": 0.336,
-    "headline_count": 3,
-    "freshness": 0.89,
+    "sentiment_score": -0.25,
+    "confidence": 0.143,
+    "headline_count": 4,
+    "freshness": 0.29,
     "source": "offline",
     "headlines": [
-      "BNB market volume steadies as traders wait for confirmation",
-      "Crypto market risk remains mixed after recent liquidation wave",
-      "BNB ecosystem upgrade narrative supports cautious adoption"
+      "BNB Chain Launches AI Agent SDK on BSC Mainnet",
+      "BNB Chain Is Booming Again \u2014 So Why Isn't BNB Price Moving?",
+      "BNB Drops 3.2% Amid Broad Crypto Risk-Off, Macro Shocks",
+      "Binance faces make-or-break MiCA deadline as BNB tumbles"
+    ],
+    "headline_items": [
+      {
+        "title": "BNB Chain Launches AI Agent SDK on BSC Mainnet",
+        "source": "CoinTrust",
+        "url": "https://www.cointrust.com/market-news/bnb-chain-launches-ai-agent-sdk-on-bsc-mainnet",
+        "published_at": "2026-05-19T00:00:00Z"
+      },
+      {
+        "title": "BNB Chain Is Booming Again \u2014 So Why Isn't BNB Price Moving?",
+        "source": "Coinpedia",
+        "url": "https://coinpedia.org/price-analysis/bnb-chain-is-booming-again-so-why-isnt-bnb-price-moving/",
+        "published_at": "2026-06-10T00:00:00Z"
+      },
+      {
+        "title": "BNB Drops 3.2% Amid Broad Crypto Risk-Off, Macro Shocks",
+        "source": "CoinMarketCap",
+        "url": "https://coinmarketcap.com/top-stories/6a29533e504d4e147e5c41bb/",
+        "published_at": "2026-06-10T12:06:00Z"
+      },
+      {
+        "title": "Binance faces make-or-break MiCA deadline as BNB tumbles",
+        "source": "crypto.news",
+        "url": "https://crypto.news/binance-faces-make-or-break-mica-deadline-as-bnb-tumbles/",
+        "published_at": "2026-06-18T22:07:00Z"
+      }
     ],
     "matrix": {
       "action": "WAIT",
-      "score": 45.3,
+      "score": 44.7,
       "weights": {
         "trend": 35.0,
         "cost": 20.0,
@@ -56,7 +83,7 @@
       "components": {
         "trend": 0.5,
         "cost": 1.0,
-        "sentiment": 0.5186,
+        "sentiment": 0.4822,
         "risk": 0.0,
         "momentum": 0.0
       },

@@ -27,14 +27,16 @@ def build_sentiment_snapshot(
 
     if headlines is None:
         items = offline_headlines(symbol, now=now)
+        provenance: str | None = "offline"
     else:
         raw = list(headlines)
         if raw and isinstance(raw[0], Headline):
             items = raw  # type: ignore[assignment]
         else:
             items = normalize_headlines(symbol, raw)
+        provenance = None
 
-    snapshot = score_headlines(symbol, list(items), now=now)
+    snapshot = score_headlines(symbol, list(items), now=now, provenance=provenance)
     if use_cache and cache_dir is not None:
         write_cached(snapshot, cache_dir=cache_dir)
     return snapshot

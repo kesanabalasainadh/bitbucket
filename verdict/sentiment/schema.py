@@ -23,3 +23,6 @@ class SentimentSnapshot(BaseModel):
     freshness: float = Field(ge=0.0, le=1.0)
     source: str = "offline"
     headlines: list[str] = Field(default_factory=list)
+    # Structured headlines (title + outlet + url) for UIs that link sources.
+    # Kept alongside `headlines` (titles-only) for backward compatibility.
+    headline_items: list[Headline] = Field(default_factory=list)

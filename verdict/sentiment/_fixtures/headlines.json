@@ -1,0 +1,31 @@
+{
+  "as_of": "2026-06-20",
+  "note": "Committed real-news snapshot for reproducible, offline-by-default runs. Each headline's title, source, and URL are real and were captured on `as_of`; the sentiment score is computed from the titles by verdict.sentiment.score. This keeps the demo honest (real, clickable sources) AND reproducible (no key, no network). To refresh, replace these rows from a live news source.",
+  "symbol": "BNB",
+  "headlines": [
+    {
+      "title": "BNB Chain Launches AI Agent SDK on BSC Mainnet",
+      "source": "CoinTrust",
+      "url": "https://www.cointrust.com/market-news/bnb-chain-launches-ai-agent-sdk-on-bsc-mainnet",
+      "published_at": "2026-05-19T00:00:00+00:00"
+    },
+    {
+      "title": "BNB Chain Is Booming Again — So Why Isn't BNB Price Moving?",
+      "source": "Coinpedia",
+      "url": "https://coinpedia.org/price-analysis/bnb-chain-is-booming-again-so-why-isnt-bnb-price-moving/",
+      "published_at": "2026-06-10T00:00:00+00:00"
+    },
+    {
+      "title": "BNB Drops 3.2% Amid Broad Crypto Risk-Off, Macro Shocks",
+      "source": "CoinMarketCap",
+      "url": "https://coinmarketcap.com/top-stories/6a29533e504d4e147e5c41bb/",
+      "published_at": "2026-06-10T12:06:00+00:00"
+    },
+    {
+      "title": "Binance faces make-or-break MiCA deadline as BNB tumbles",
+      "source": "crypto.news",
+      "url": "https://crypto.news/binance-faces-make-or-break-mica-deadline-as-bnb-tumbles/",
+      "published_at": "2026-06-18T22:07:00+00:00"
+    }
+  ]
+}

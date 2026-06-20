@@ -164,10 +164,16 @@ def sentiment_block():
         series = load_ohlcv("BNB/USDT", "4h")
         v = select(generate_candidates(series, None), series, PANCAKESWAP_V2)
         m = decide_matrix(v, snap)
-        d = snap.model_dump()
+        d = snap.model_dump(mode="json")
         headlines = d.get("headlines") or []
         headlines = [h if isinstance(h, str) else (h.get("headline") if isinstance(h, dict) else str(h))
                      for h in headlines][:4]
+        # Structured headlines with real outlet + clickable source URL.
+        headline_items = [
+            {"title": it.get("title"), "source": it.get("source"),
+             "url": it.get("url"), "published_at": it.get("published_at")}
+            for it in (d.get("headline_items") or [])
+        ][:4]
         return {
             "sentiment_score": round(d.get("sentiment_score", 0.0), 3),
             "confidence": round(d.get("confidence", 0.0), 3),
@@ -175,6 +181,7 @@ def sentiment_block():
             "freshness": round(d.get("freshness", 0.0), 2),
             "source": d.get("source", "offline"),
             "headlines": headlines,
+            "headline_items": headline_items,
             "matrix": {
                 "action": m.action.value,
                 "score": round(m.score, 1),

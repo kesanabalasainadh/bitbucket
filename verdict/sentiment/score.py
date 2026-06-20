@@ -8,11 +8,15 @@ from verdict.signals.symbols import base_symbol
 
 POSITIVE = {
     "adoption", "approval", "bullish", "breakout", "growth", "partnership",
-    "rally", "record", "recovery", "surge", "upgrade", "volume",
+    "rally", "record", "recovery", "surge", "surges", "upgrade", "volume",
+    "booming", "boom", "soars", "soar", "jumps", "gains", "inflows",
+    "milestone", "outperforms", "expansion", "rebound",
 }
 NEGATIVE = {
     "attack", "bearish", "crash", "decline", "exploit", "fear", "hack",
-    "lawsuit", "liquidation", "outage", "probe", "risk", "selloff", "slump",
+    "lawsuit", "liquidation", "outage", "probe", "risk", "risk-off", "selloff", "slump",
+    "drop", "drops", "tumble", "tumbles", "plunge", "plunges", "slide", "slides",
+    "sinks", "shock", "shocks", "rout", "downturn", "dump", "rejection", "slumps",
 }
 
 
@@ -29,13 +33,19 @@ def _freshness(now: datetime, headlines: list[Headline]) -> float:
     return round(exp(-newest_hours / 36.0), 4)
 
 
-def score_headlines(symbol: str, headlines: list[Headline], *, now: datetime | None = None) -> SentimentSnapshot:
+def score_headlines(
+    symbol: str,
+    headlines: list[Headline],
+    *,
+    now: datetime | None = None,
+    provenance: str | None = None,
+) -> SentimentSnapshot:
     now = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
     if not headlines:
         return SentimentSnapshot(
             symbol=base_symbol(symbol), ts=now, sentiment_score=0.0, confidence=0.0,
             headline_count=0, volatility_adjustment=0.0, freshness=0.0,
-            source="offline-empty", headlines=[],
+            source=provenance or "offline-empty", headlines=[], headline_items=[],
         )
 
     scores = [_headline_score(h.title) for h in headlines]
@@ -45,7 +55,8 @@ def score_headlines(symbol: str, headlines: list[Headline], *, now: datetime | N
     count_conf = min(1.0, len(headlines) / 8.0)
     confidence = round(count_conf * freshness, 4)
     volatility_adjustment = round(min(1.0, abs(score) * confidence), 4)
-    source = "offline" if all(h.source == "offline" for h in headlines) else "mixed"
+    # `provenance` (offline | live) is explicit; per-headline `source` is the outlet name.
+    source = provenance or ("offline" if all(h.source == "offline" for h in headlines) else "mixed")
     return SentimentSnapshot(
         symbol=base_symbol(symbol),
         ts=now,
@@ -56,4 +67,5 @@ def score_headlines(symbol: str, headlines: list[Headline], *, now: datetime | N
         freshness=freshness,
         source=source,
         headlines=[h.title for h in headlines[:8]],
+        headline_items=list(headlines[:8]),
     )

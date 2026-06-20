@@ -235,6 +235,13 @@ section { padding: 70px 0; position: relative; }
 .news .h { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; color: var(--ink-dim); padding: 9px 11px; background: var(--bg-3); border-radius: 6px; border-left: 2px solid var(--line-2); }
 .news .h .dot { width: 6px; height: 6px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
 .news .h .dot.pos { background: var(--green); } .news .h .dot.neg { background: var(--red); } .news .h .dot.neu { background: var(--ink-faint); }
+.news .h .hl-line { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.news .h a.hl { color: var(--ink); text-decoration: none; border-bottom: 1px solid transparent; transition: color .12s, border-color .12s; }
+.news .h a.hl:hover { color: var(--gold); border-bottom-color: var(--gold); }
+.news .h a.hl .ext { opacity: .45; font-size: 11px; }
+.news .h .meta { display: flex; gap: 8px; align-items: center; font-size: 11px; }
+.news .h .meta .src { font-weight: 600; color: var(--ink-dim); letter-spacing: .02em; }
+.news .h .meta .date { color: var(--ink-faint); }
 .mbars { display: flex; flex-direction: column; gap: 9px; margin: 4px 0 8px; }
 .mbar { display: grid; grid-template-columns: 78px 1fr 38px; gap: 10px; align-items: center; font-family: var(--mono); font-size: 11px; }
 .mbar .k { color: var(--ink-dim); text-transform: capitalize; }

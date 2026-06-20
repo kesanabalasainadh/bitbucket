@@ -48,7 +48,7 @@ def run_demo(asset: str, timeframe: str, trait: AgentTrait) -> dict:
             "end": series.bars[-1].ts.isoformat() if series.bars else None,
             "source": series.source,
         },
-        "sentiment": sentiment.model_dump(mode="json", exclude={"headlines"}),
+        "sentiment": sentiment.model_dump(mode="json", exclude={"headlines", "headline_items"}),
         "strategy": {
             "candidates": len(verdict.candidates),
             "best_candidate": best.id,
