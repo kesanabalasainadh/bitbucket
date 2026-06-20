@@ -1,0 +1,37 @@
+# --- secrets: NEVER commit. This is a PUBLIC hackathon repo. ---
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+secrets.*
+**/keystore/**
+~/.twak
+**/wallets/**
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# data / caches (large, regenerable)
+data/
+*.parquet
+*.duckdb
+*.sqlite
+.cache/
+
+# reports keep .md/.json/.png but ignore scratch
+reports/scratch/
+
+# os / editor
+.DS_Store
+.idea/
+.vscode/
+*.log

@@ -1,0 +1,23 @@
+# VERDICT — core dependencies (Track 2 / quant core)
+# WP-specific extras are listed in each agents/WP-*.md.
+
+# data + quant
+pandas>=2.0
+numpy>=1.24
+ta>=0.11.0            # technical indicators (RSI/MACD/EMA/ATR) for the backtester
+ccxt>=4.2.0           # historical OHLCV fallback (Binance public data)
+pyarrow>=14.0         # parquet candle cache
+
+# contracts / io
+pydantic>=2.6         # StrategySpec / AgentVerdict / Decision schemas (CONTRACTS.md)
+python-dotenv>=1.0
+httpx>=0.27           # CMC REST + x402 calls
+requests>=2.31
+
+# reporting
+matplotlib>=3.8       # equity / drawdown curves for the StrategySpec + demo
+
+# --- Track 1 only (execution/runtime) — install when building WP-4/WP-5 ---
+# web3>=6.15           # BSC RPC + PancakeSwap router
+# eth-account>=0.11    # EIP-3009 / local signing
+# mcp>=1.0             # CMC MCP + TWAK MCP clients (or use the host agent's MCP)
