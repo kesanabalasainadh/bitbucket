@@ -164,7 +164,7 @@ Python · pydantic v2 · pandas / numpy · matplotlib · `ta` · ccxt (historica
 ## Team & contact
 
 - Team: VERDICT — *(2 contributors)*
-- Contact (Telegram / email): _to be completed on the DoraHacks BUIDL form before submission._
+- Contact (email): kesanabalasainadh1269@gmail.com
 
 ## Compliance
 

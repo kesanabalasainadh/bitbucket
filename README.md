@@ -33,7 +33,9 @@ survives, it says so.
    and strict **no-lookahead** discipline.
 5. **Verdict** — applies a **pre-registered 3-criterion rule** (beats benchmark net of costs · positive
    in ≥60% of out-of-sample windows · Sharpe ≥ 1 & drawdown ≤ 25%) and emits an **`AgentVerdict`**: the
-   best risk-adjusted strategy, or an honest `NO_TRADE`.
+   best risk-adjusted strategy, or an honest `NO_TRADE`. Among the candidates that clear all three, the
+   winner is ranked by a fixed **`risk_score` blend** (Sharpe 35% · drawdown 25% · window-consistency
+   25% · win-rate 15%) — the tie-breaker is committed in code, not tuned after seeing results.
 6. **Narrate** — runs an explainable decision matrix, kill-switch check, and personality-driven DCA
    narrative. This is not live execution.
 

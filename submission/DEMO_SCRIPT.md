@@ -4,6 +4,7 @@
 
 ## 0:00 - Introduction & The Problem
 - **Visual**: Open the live dashboard — https://kesanabalasainadh.github.io/bitbucket/ — then the BUIDL page.
+- **Note (say this aloud):** the dashboard shows **both** a TRADE and a NO_TRADE. The **+212% TRADE is on a controlled *synthetic* range market** — a deterministic fixture used to prove the engine *acts* when a validated edge exists. The **NO_TRADE is the honest verdict on the real BNB/CAKE/BTC/ETH majors** (4h, net of DEX costs). The +212% is the control, not a real-pair return claim.
 - **Script**: "Welcome to VERDICT. Most AI trading agents use a single prompt and one lucky backtest window to generate 'market-beating' strategies. VERDICT is built to be the opposite: an honest quant that treats strategy generation as rigorous research."
 
 ## 0:30 - The Data Engine (CoinMarketCap)
