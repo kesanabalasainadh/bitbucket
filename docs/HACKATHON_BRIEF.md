@@ -168,3 +168,36 @@ usage targets the **$2k Best-Use-of-CMC** special prize. (Track 1 is a stretch b
 - https://pro.coinmarketcap.com/api/documentation/ai-agent-hub/ (mcp / x402 / skills/overview)
 - https://chainwire.org/2026/06/03/bnb-chain-launches-36000-hackathon-to-advance-on-chain-ai-trading-agents/
 - https://cryptobriefing.com/bnb-chain-coinmarketcap-and-trust-wallet-launch-36000-bnb-hack-ai-trading-agent-edition/
+
+---
+
+## 9. Track-1 live-competition mechanics (authoritative — from the official page)
+
+> These resolve the items earlier recon flagged as OPEN. Track 2 has **no** on-chain registration.
+
+**On-chain registration (Track 1):** registration is a BSC smart contract that records each agent's
+wallet address as an immutable participant list; **entries after the trading window opens are rejected.**
+Register via **CLI `twak compete register`** or **MCP action `competition_register`** (both resolve your
+agent wallet + submit the tx). **Competition contract:** `0x212c61b9b72c95d95bf29cf032f5e5635629aed5`
+(bsctrace.com). Then **also** register + submit the agent address on DoraHacks and explain the strategy.
+
+**Eligible tokens:** a fixed **149-token BEP-20 allowlist** — trades outside it **do not count**
+(resolve the authoritative on-chain list at registration). Includes ETH, USDT, USDC, XRP, ADA, LINK,
+DOT, UNI, AAVE, ATOM, FIL, INJ, **CAKE, TWT** (BNB-ecosystem assets favored), DOGE, SHIB, AVAX, LTC,
+PENDLE, COMP, SUSHI, YFI, SNX, 1INCH, APE, FLOKI, BONK, … (full list in the builder prompt / on-chain).
+
+**Live-competition rules:**
+- **Min trades:** ≥1 trade/day (7 over the week) or you don't qualify.
+- **Must hold non-zero in-scope assets at start** to be ranked.
+- **Dust rule:** returns measured hour-by-hour; any hour that **begins** with portfolio ≤ **$1** scores
+  **0% for that hour** — keep capital deployed the whole window.
+- **Drawdown DQ:** blow past the max-drawdown cap (e.g. 30%) → disqualified regardless of return.
+- Simulated transaction costs apply.
+
+**"Best Use of TWAK" rubric (100 pts, for the $2k special):** TWAK integration depth 30 (sole execution
+layer + >1 surface) · self-custody integrity 25 (penalty ladder: full self-custody 20–25; partial
+custody 8–15; core loop custodial 0–7) · autonomous execution + guardrails 20 · native x402 usage 10 ·
+originality/relevance 10 · demo 5 (show the self-custody signing loop end-to-end + a BSC tx hash).
+Tie-break: cleanest self-custody → deepest least-replaceable TWAK → most x402.
+
+**Source:** official DoraHacks/CMC hackathon page (pasted verbatim by the team, 2026-06-19).
