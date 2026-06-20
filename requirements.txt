@@ -16,6 +16,7 @@ requests>=2.31
 
 # reporting
 matplotlib>=3.8       # equity / drawdown curves for the StrategySpec + demo
+pytest-cov>=5.0       # reproducible coverage reports for audit / submission checks
 
 # --- Track 1 only (execution/runtime) — install when building WP-4/WP-5 ---
 # web3>=6.15           # BSC RPC + PancakeSwap router

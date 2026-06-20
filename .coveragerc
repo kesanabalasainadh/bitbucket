@@ -1,0 +1,12 @@
+[run]
+source = verdict
+omit =
+    verdict/core/tests/*
+    verdict/signals/tests/*
+    verdict/sentiment/tests/*
+    verdict/safety/tests/*
+    verdict/agent/tests/*
+
+[report]
+show_missing = True
+skip_covered = False
