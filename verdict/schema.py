@@ -49,6 +49,18 @@ class Mode(str, Enum):
 
 
 # --------------------------------------------------------------------------- #
+# Sentiment data (V3)
+# --------------------------------------------------------------------------- #
+class NewsEvent(BaseModel):
+    headline: str
+    published_at: datetime
+    source: str
+    symbols: list[str]
+    url: str
+    sentiment_raw: str  # "positive" | "negative" | "neutral"
+    confidence: float
+
+# --------------------------------------------------------------------------- #
 # Market data
 # --------------------------------------------------------------------------- #
 class OHLCVBar(BaseModel):
@@ -229,5 +241,5 @@ __all__ = [
     "Side", "RiskProfile", "Verdict", "Mode",
     "OHLCVBar", "OHLCVSeries", "Signal",
     "StrategyMetrics", "WalkForwardWindow", "StrategySpec", "AgentVerdict",
-    "RiskLimits", "Decision", "Fill",
+    "RiskLimits", "Decision", "Fill", "NewsEvent",
 ]

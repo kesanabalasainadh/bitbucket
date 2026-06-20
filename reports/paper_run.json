@@ -1,0 +1,82 @@
+[
+  {
+    "ts": "2023-01-01T00:00:00+00:00",
+    "symbol": "BTC/USDT",
+    "news_events": 2,
+    "sentiment_score": 0.45,
+    "verdict": "NO_TRADE",
+    "reason": "Sentiment passed but price momentum failed matrix check"
+  },
+  {
+    "ts": "2023-01-01T00:00:00+00:00",
+    "symbol": "BTC/USDT",
+    "news_events": 2,
+    "sentiment_score": 0.45,
+    "verdict": "NO_TRADE",
+    "reason": "Sentiment passed but price momentum failed matrix check"
+  },
+  {
+    "ts": "2023-01-01T00:00:00+00:00",
+    "symbol": "BTC/USDT",
+    "news_events": 2,
+    "sentiment_score": 0.45,
+    "verdict": "NO_TRADE",
+    "reason": "Sentiment passed but price momentum failed matrix check"
+  },
+  {
+    "ts": "2023-01-01T00:00:00+00:00",
+    "symbol": "BTC/USDT",
+    "news_events": 2,
+    "sentiment_score": 0.45,
+    "verdict": "NO_TRADE",
+    "reason": "Sentiment passed but price momentum failed matrix check"
+  },
+  {
+    "ts": "2023-01-01T00:00:00+00:00",
+    "symbol": "BTC/USDT",
+    "news_events": 2,
+    "sentiment_score": 0.45,
+    "verdict": "NO_TRADE",
+    "reason": "Sentiment passed but price momentum failed matrix check"
+  },
+  {
+    "ts": "2023-01-01T00:00:00+00:00",
+    "symbol": "BTC/USDT",
+    "news_events": 2,
+    "sentiment_score": 0.45,
+    "verdict": "NO_TRADE",
+    "reason": "Sentiment passed but price momentum failed matrix check"
+  },
+  {
+    "ts": "2023-01-01T00:00:00+00:00",
+    "symbol": "BTC/USDT",
+    "news_events": 2,
+    "sentiment_score": 0.45,
+    "verdict": "NO_TRADE",
+    "reason": "Sentiment passed but price momentum failed matrix check"
+  },
+  {
+    "ts": "2023-01-01T00:00:00+00:00",
+    "symbol": "BTC/USDT",
+    "news_events": 2,
+    "sentiment_score": 0.45,
+    "verdict": "NO_TRADE",
+    "reason": "Sentiment passed but price momentum failed matrix check"
+  },
+  {
+    "ts": "2023-01-01T00:00:00+00:00",
+    "symbol": "BTC/USDT",
+    "news_events": 2,
+    "sentiment_score": 0.45,
+    "verdict": "NO_TRADE",
+    "reason": "Sentiment passed but price momentum failed matrix check"
+  },
+  {
+    "ts": "2023-01-01T00:00:00+00:00",
+    "symbol": "BTC/USDT",
+    "news_events": 2,
+    "sentiment_score": 0.45,
+    "verdict": "NO_TRADE",
+    "reason": "Sentiment passed but price momentum failed matrix check"
+  }
+]
