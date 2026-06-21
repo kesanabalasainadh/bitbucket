@@ -70,6 +70,13 @@ def apple_touch_icon():
     return send_from_directory(str(STATIC), "apple-touch-icon.png")
 
 
+@app.route("/verdict.json")
+def verdict_json():
+    # committed deterministic payload, served instantly so the dashboard's first paint
+    # never waits on the live engine (/api/verdict stays available for a live run)
+    return jsonify(_cached_payload())
+
+
 @app.route("/api/verdict")
 def api_verdict():
     """Run the engine live; fall back to the committed deterministic payload."""

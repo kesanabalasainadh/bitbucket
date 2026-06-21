@@ -14,13 +14,12 @@ const shortDate = (iso) => {
 };
 
 async function loadData() {
-  // On a static host (file:// or GitHub Pages) there is no Flask API, so skip the
-  // /api probe to keep the judge-facing console clean; serve the committed snapshot.
-  const staticHost = location.protocol === "file:" || /\.github\.io$/.test(location.hostname);
-  const sources = staticHost
-    ? ["./verdict.json", "../data/verdict.json"]
-    : ["/api/verdict", "./verdict.json", "../data/verdict.json"];
-  for (const url of sources) {
+  // The verdict is deterministic, so the committed snapshot == the live engine output.
+  // Load it first (instant) for fast first paint — never block on the live engine.
+  // Live CMC still flows separately via /api/live-cmc (see startLive). /api/verdict
+  // (runs the engine live, ~20-40s) is only a last-resort fallback, so the page never
+  // shows a long blank/splash wait.
+  for (const url of ["./verdict.json", "../data/verdict.json", "/api/verdict"]) {
     try {
       const r = await fetch(url, { cache: "no-store" });
       if (r.ok) { const d = await r.json(); d._src = url; return d; }
