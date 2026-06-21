@@ -132,7 +132,8 @@ h1, h2, h3 { font-family: var(--display); font-weight: 600; line-height: 1.04; l
   border-bottom: 1px solid var(--line);
 }
 .topbar .wrap { display: flex; align-items: center; gap: 22px; height: 58px; }
-.brand { font-family: var(--display); font-weight: 800; font-size: 20px; letter-spacing: 0.02em; }
+.brand { display: inline-flex; align-items: center; font-family: var(--display); font-weight: 800; font-size: 20px; letter-spacing: 0.02em; }
+.brand-mark { height: 26px; width: 26px; margin-right: 9px; border-radius: 6px; flex-shrink: 0; }
 .brand .v { color: var(--gold); }
 .brand .dot { color: var(--gold); }
 .ticker { display: flex; gap: 18px; margin-left: auto; align-items: center; font-family: var(--mono); font-size: 12px; }
