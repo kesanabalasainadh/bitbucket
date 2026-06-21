@@ -82,6 +82,22 @@
   </section>
 </div>
 
+<!-- ░░ candle data (the data behind the verdict) ░░ -->
+<div class="wrap">
+  <section class="reveal">
+    <div class="sec-head"><span class="section-num">·</span><h2 class="section-title">The data behind the verdict</h2>
+      <span class="dtag repro tip" data-tip="The exact committed OHLCV candles the walk-forward backtest runs on — no key, no network. Source: public exchange via ccxt.">REPRODUCIBLE</span><span class="line"></span></div>
+    <div class="panel">
+      <div class="candle-head">
+        <div class="seg" id="candle-assets"></div>
+        <div class="faint mono" id="candle-meta">—</div>
+      </div>
+      <svg class="chart candle" id="candle-chart" preserveAspectRatio="none"></svg>
+      <p class="grid-caption">Live price ticks in the bar up top; this is the <b>historical candle series</b> the backtest actually evaluates (last ~80 bars). <span class="faint">ccxt-kucoin, committed for reproducibility — click an asset to switch.</span></p>
+    </div>
+  </section>
+</div>
+
 <!-- ░░ live CMC ░░ -->
 <div class="wrap">
   <section class="reveal">

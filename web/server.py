@@ -67,8 +67,9 @@ def api_verdict():
                                      live_cmc, sentiment_block, onchain_identity)
         from verdict.core.costs import PANCAKESWAP_V2
         trade_block, notrade_block = two_sided()
+        _static = _cached_payload()  # static-only blocks (candles, tf sweep) — no recompute
         payload = {
-            "tests": "122 passed, 2 skipped",
+            "tests": "126 passed, 2 skipped",
             "cost_model": PANCAKESWAP_V2.label,
             "live_cmc": live_cmc(),
             "onchain": onchain_identity(),
@@ -77,6 +78,8 @@ def api_verdict():
             "walkforward": walkforward_windows(),
             "trade": trade_block,
             "no_trade": notrade_block,
+            "candles": _static.get("candles"),
+            "tf_sweep": _static.get("tf_sweep"),
             "source": "live-engine",
         }
         return jsonify(payload)

@@ -283,11 +283,28 @@ def live_cmc():
         return {"error": str(e)[:120], "live": False}
 
 
+def candles(assets=None, timeframe="4h", n=80):
+    """The actual OHLCV the engine backtests on (committed ccxt fixtures) — last n
+    bars per asset, so the dashboard can chart the data behind the verdict."""
+    assets = assets or ["BNB/USDT", "CAKE/USDT", "BTC/USDT", "ETH/USDT"]
+    series = {}
+    for a in assets:
+        try:
+            bars = load_ohlcv(a, timeframe).bars[-n:]
+            d = 4 if (bars and bars[-1].close < 100) else 2
+            series[a] = [{"t": b.ts.isoformat(), "o": round(b.open, d), "h": round(b.high, d),
+                          "l": round(b.low, d), "c": round(b.close, d)} for b in bars]
+        except Exception:
+            series[a] = []
+    return {"timeframe": timeframe, "assets": [a for a in assets if series.get(a)], "series": series}
+
+
 def main():
     payload = {
         "generated_note": "All numbers produced by the VERDICT engine (deterministic). See web/build_data.py.",
         "tests": "126 passed, 2 skipped",
         "tf_sweep": timeframe_sweep(),
+        "candles": candles(),
         "cost_model": PANCAKESWAP_V2.label,
         "rule": {
             "criteria": [
