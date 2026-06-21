@@ -105,6 +105,64 @@ function gauge(svg, value) {
 }
 
 /* ---------- render ---------- */
+/* ---------- candlestick chart (the candle data the engine backtests on) ---------- */
+function candleChart(svg, bars) {
+  if (!svg) return;
+  svg.innerHTML = "";
+  if (!bars || !bars.length) return;
+  const W = 1000, H = 300, padT = 10, padB = 16, padL = 6, padR = 58;
+  const hi = Math.max(...bars.map(b => b.h)), lo = Math.min(...bars.map(b => b.l));
+  const span = (hi - lo) || 1, n = bars.length;
+  const cw = (W - padL - padR) / n;
+  const x = i => padL + i * cw + cw / 2;
+  const y = v => padT + (1 - (v - lo) / span) * (H - padT - padB);
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  const bw = Math.max(1.4, cw * 0.6), mk = t => document.createElementNS(SVGNS, t);
+  bars.forEach((b, i) => {
+    const col = b.c >= b.o ? "var(--green)" : "var(--red)";
+    const w = mk("line");
+    w.setAttribute("x1", x(i).toFixed(1)); w.setAttribute("x2", x(i).toFixed(1));
+    w.setAttribute("y1", y(b.h).toFixed(1)); w.setAttribute("y2", y(b.l).toFixed(1));
+    w.setAttribute("stroke", col); w.setAttribute("stroke-width", "1");
+    svg.appendChild(w);
+    const yo = y(b.o), yc = y(b.c), r = mk("rect");
+    r.setAttribute("x", (x(i) - bw / 2).toFixed(1)); r.setAttribute("y", Math.min(yo, yc).toFixed(1));
+    r.setAttribute("width", bw.toFixed(1)); r.setAttribute("height", Math.max(1, Math.abs(yc - yo)).toFixed(1));
+    r.setAttribute("fill", col);
+    svg.appendChild(r);
+  });
+  const last = bars[n - 1].c, fp = v => v >= 1000 ? v.toFixed(0) : v.toFixed(2);
+  [[hi, y(hi), 0], [last, y(last), 1], [lo, y(lo), 0]].forEach(([v, yy, isLast]) => {
+    const t = mk("text");
+    t.setAttribute("x", W - padR + 6);
+    t.setAttribute("y", Math.max(padT + 8, Math.min(H - 4, yy + 3)).toFixed(1));
+    t.setAttribute("fill", isLast ? "var(--gold)" : "var(--ink-faint)");
+    t.setAttribute("font-size", "11"); t.setAttribute("font-family", "ui-monospace,monospace");
+    t.textContent = "$" + fp(v);
+    svg.appendChild(t);
+  });
+}
+function renderCandles(c) {
+  const seg = $("#candle-assets"), svg = $("#candle-chart");
+  if (!c || !c.series || !seg || !svg) return;
+  const assets = (c.assets && c.assets.length) ? c.assets : Object.keys(c.series);
+  if (!assets.length) return;
+  const draw = (a) => {
+    candleChart(svg, c.series[a]);
+    const meta = $("#candle-meta"), bars = c.series[a] || [];
+    if (meta) meta.textContent = bars.length ? `${a} · ${c.timeframe} · ${bars.length} bars` : "—";
+    [...seg.children].forEach(b => b.classList.toggle("on", b.dataset.a === a));
+  };
+  seg.innerHTML = "";
+  assets.forEach(a => {
+    const btn = el("button", "seg-btn");
+    btn.dataset.a = a; btn.textContent = a.split("/")[0];
+    btn.onclick = () => draw(a);
+    seg.appendChild(btn);
+  });
+  draw(assets.includes("BNB/USDT") ? "BNB/USDT" : assets[0]);
+}
+
 function render(d) {
   // ticker + status
   const cmc = d.live_cmc || {};
@@ -162,6 +220,7 @@ function render(d) {
 
   // sentiment + decision matrix
   renderSentiment(d.sentiment || {});
+  renderCandles(d.candles);
 
   // two-sided
   const t = d.trade || {}, tm = t.metrics || {};
