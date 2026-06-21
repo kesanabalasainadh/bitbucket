@@ -59,6 +59,17 @@ def static_files(filename):
     return send_from_directory(str(STATIC), filename)
 
 
+@app.route("/favicon.ico")
+def favicon():
+    # so every path on the domain (incl. the /api/* JSON pages) shows the tab icon
+    return send_from_directory(str(STATIC), "favicon.png", mimetype="image/png")
+
+
+@app.route("/apple-touch-icon.png")
+def apple_touch_icon():
+    return send_from_directory(str(STATIC), "apple-touch-icon.png")
+
+
 @app.route("/api/verdict")
 def api_verdict():
     """Run the engine live; fall back to the committed deterministic payload."""

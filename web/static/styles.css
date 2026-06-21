@@ -134,6 +134,13 @@ h1, h2, h3 { font-family: var(--display); font-weight: 600; line-height: 1.04; l
 .topbar .wrap { display: flex; align-items: center; gap: 22px; height: 58px; }
 .brand { display: inline-flex; align-items: center; font-family: var(--display); font-weight: 800; font-size: 20px; letter-spacing: 0.02em; }
 .brand-mark { height: 26px; width: 26px; margin-right: 9px; border-radius: 6px; flex-shrink: 0; }
+#splash { position: fixed; inset: 0; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; background: var(--bg); transition: opacity .55s ease; }
+#splash.hidden { opacity: 0; pointer-events: none; }
+.splash-logo { width: 76px; height: 76px; border-radius: 16px; box-shadow: 0 0 44px rgba(240,185,11,0.16); animation: splashpulse 2s ease-in-out infinite; }
+.splash-spinner { width: 26px; height: 26px; border: 3px solid var(--bg-3); border-top-color: var(--gold); border-radius: 50%; animation: splashspin .8s linear infinite; }
+.splash-text { font-family: var(--mono); font-size: 11px; letter-spacing: .16em; color: var(--ink-dim); text-transform: uppercase; }
+@keyframes splashspin { to { transform: rotate(360deg); } }
+@keyframes splashpulse { 0%,100% { box-shadow: 0 0 30px rgba(240,185,11,0.12); } 50% { box-shadow: 0 0 52px rgba(240,185,11,0.26); } }
 .brand .v { color: var(--gold); }
 .brand .dot { color: var(--gold); }
 .ticker { display: flex; gap: 18px; margin-left: auto; align-items: center; font-family: var(--mono); font-size: 12px; }

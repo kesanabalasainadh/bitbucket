@@ -439,13 +439,20 @@ async function startLive() {
   setInterval(tick, 20000);
 }
 
+function hideSplash() {
+  const s = document.getElementById("splash");
+  if (s && !s.classList.contains("hidden")) { s.classList.add("hidden"); setTimeout(() => s.remove(), 650); }
+}
+
 (async function () {
   initTheme();
+  setTimeout(hideSplash, 25000);   // safety net: never trap the user behind the splash
   const data = await loadData();
-  if (!data) { $("#status-label").textContent = "DATA UNAVAILABLE — run python web/build_data.py"; return; }
+  if (!data) { $("#status-label").textContent = "DATA UNAVAILABLE — run python web/build_data.py"; hideSplash(); return; }
   render(data);
   observeReveals();
   startLive();
+  hideSplash();
   window.addEventListener("resize", () => {
     if (data.trade) lineChart($("#trade-chart"), [
       { data: data.trade.benchmark || [], color: "#58a6b8", width: 1.6, dash: "4 4" },
