@@ -94,6 +94,51 @@ def regime_grid():
     return rows
 
 
+def _flatten_findings(av):
+    """Flatten an AgentVerdict's per-asset/per-candidate criteria into 12 table rows."""
+    out = []
+    spec_by_id = {c.id: c for c in av.candidates}
+    for asset, ac in (av.criteria.get("per_asset") or {}).items():
+        for cid, pc in (ac.get("per_candidate") or {}).items():
+            spec = spec_by_id.get(cid)
+            out.append({
+                "asset": asset,
+                "archetype": cid.split("-")[0],
+                "name": spec.name if spec else cid,
+                "oos_sharpe": round(pc.get("oos_sharpe", 0.0), 2),
+                "oos_max_drawdown": round(pc.get("oos_max_drawdown_pct", 0.0), 1),
+                "oos_return": round(pc.get("median_oos_return_pct", 0.0), 1),
+                "benchmark": round(pc.get("median_benchmark_return_pct", 0.0), 1),
+                "window_pass_rate": round(pc.get("window_pass_rate", 0.0) * 100),
+                "risk_score": round(pc.get("risk_score", 0.0)),
+                "trades": spec.metrics.num_trades if spec else None,
+                "c1": bool(pc.get("criterion_1_beats_benchmark")),
+                "c2": bool(pc.get("criterion_2_window_consistency")),
+                "c3": bool(pc.get("criterion_3_risk_adjusted")),
+                "reason": (av.rejected.get(cid) or "").split(";")[0][:74],
+            })
+    return out
+
+
+def timeframe_sweep(assets=None, timeframes=("1h", "4h", "1d")):
+    """Robustness: run the same majors through multiple timeframes. The verdict
+    should hold (NO_TRADE) across all of them, not just the headline 4h."""
+    assets = assets or ["BNB/USDT", "CAKE/USDT", "BTC/USDT", "ETH/USDT"]
+    out = []
+    for tf in timeframes:
+        try:
+            v = run_assets(assets, tf, PANCAKESWAP_V2)
+            best = 0.0
+            for ac in (v.criteria.get("per_asset") or {}).values():
+                for pc in (ac.get("per_candidate") or {}).values():
+                    best = max(best, pc.get("risk_score", 0.0))
+            out.append({"tf": tf, "verdict": v.verdict.value,
+                        "candidates": len(v.candidates), "best_risk_score": round(best)})
+        except Exception as e:  # one bad timeframe shouldn't sink the page
+            out.append({"tf": tf, "error": str(e)[:60]})
+    return out
+
+
 def two_sided():
     rng = _range()
     trade = select(generate_candidates(rng, None), rng, PANCAKESWAP_V2)
@@ -241,7 +286,8 @@ def live_cmc():
 def main():
     payload = {
         "generated_note": "All numbers produced by the VERDICT engine (deterministic). See web/build_data.py.",
-        "tests": "122 passed, 2 skipped",
+        "tests": "126 passed, 2 skipped",
+        "tf_sweep": timeframe_sweep(),
         "cost_model": PANCAKESWAP_V2.label,
         "rule": {
             "criteria": [

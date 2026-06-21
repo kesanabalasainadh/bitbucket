@@ -1,6 +1,26 @@
 {
   "generated_note": "All numbers produced by the VERDICT engine (deterministic). See web/build_data.py.",
-  "tests": "122 passed, 2 skipped",
+  "tests": "126 passed, 2 skipped",
+  "tf_sweep": [
+    {
+      "tf": "1h",
+      "verdict": "NO_TRADE",
+      "candidates": 6,
+      "best_risk_score": 38
+    },
+    {
+      "tf": "4h",
+      "verdict": "NO_TRADE",
+      "candidates": 12,
+      "best_risk_score": 36
+    },
+    {
+      "tf": "1d",
+      "verdict": "NO_TRADE",
+      "candidates": 12,
+      "best_risk_score": 52
+    }
+  ],
   "cost_model": "PancakeSwap v2: 0.25% fee + 30bps slippage",
   "rule": {
     "criteria": [
@@ -11,9 +31,9 @@
   },
   "live_cmc": {
     "symbol": "BNB/USDT",
-    "price": 585.29,
-    "btc_dominance": 58.38,
-    "fear_greed": 21,
+    "price": 589.44,
+    "btc_dominance": 58.47,
+    "fear_greed": 22,
     "regime": "risk_off",
     "source": "cmc-rest-degraded",
     "live": true,
@@ -41,9 +61,9 @@
   },
   "sentiment": {
     "sentiment_score": -0.25,
-    "confidence": 0.141,
+    "confidence": 0.111,
     "headline_count": 4,
-    "freshness": 0.28,
+    "freshness": 0.22,
     "source": "offline",
     "headlines": [
       "BNB Chain Launches AI Agent SDK on BSC Mainnet",
@@ -79,7 +99,7 @@
     ],
     "matrix": {
       "action": "WAIT",
-      "score": 44.7,
+      "score": 44.8,
       "weights": {
         "trend": 35.0,
         "cost": 20.0,
@@ -90,7 +110,7 @@
       "components": {
         "trend": 0.5,
         "cost": 1.0,
-        "sentiment": 0.4824,
+        "sentiment": 0.4862,
         "risk": 0.0,
         "momentum": 0.0
       },
