@@ -8,7 +8,8 @@
 [![Track 2](https://img.shields.io/badge/Track%202-Strategy%20Skills-F0B90B)]() · primary
 [![Track 1](https://img.shields.io/badge/Track%201-Future%20Executor-lightgrey)]() · explicitly out of scope for current code
 
-**▶ Live demo:** **https://kesanabalasainadh.github.io/bitbucket/** — the dashboard runs with no key and no network (committed snapshot).
+**▶ Live demo:** **https://verdict.balasainadh.com** — live dashboard with **real CoinMarketCap data flowing** (server-side key, never in the repo).
+Always-up static mirror (no key, no network, reproducible): https://kesanabalasainadh.github.io/bitbucket/
 
 ---
 

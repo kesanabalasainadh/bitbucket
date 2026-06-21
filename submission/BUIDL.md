@@ -3,7 +3,7 @@
 **BNB HACK: AI Trading Agent Edition** (CoinMarketCap × Trust Wallet × BNB Chain) ·
 **Track 2 — Strategy Skills** (primary) · Track 1 — Autonomous Agent (stretch)
 **Public repo:** https://github.com/kesanabalasainadh/bitbucket
-**Live demo:** https://kesanabalasainadh.github.io/bitbucket/ — the dashboard, no key and no network
+**Live demo:** https://verdict.balasainadh.com — live, **real CoinMarketCap data flowing** (server-side key) · always-up static mirror (no key, no network): https://kesanabalasainadh.github.io/bitbucket/
 
 ---
 
