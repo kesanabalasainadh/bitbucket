@@ -21,7 +21,8 @@ BRANCH="gh-pages"
 trap 'rm -rf "$BUILD" "$WORKTREE"; git -C "$ROOT" worktree prune 2>/dev/null || true' EXIT
 
 echo "==> Building static export from $SRC"
-cp "$SRC/app.js" "$SRC/styles.css" "$SRC/verdict.json" "$SRC/favicon.svg" "$BUILD/"
+cp "$SRC/app.js" "$SRC/styles.css" "$SRC/verdict.json" \
+   "$SRC/favicon.png" "$SRC/apple-touch-icon.png" "$SRC/logo.png" "$BUILD/"
 # Rewrite the two absolute /static/ asset paths to relative for the Pages subpath.
 sed 's#/static/##g' "$SRC/index.html" > "$BUILD/index.html"
 touch "$BUILD/.nojekyll"
@@ -37,7 +38,7 @@ fi
 
 echo "==> Syncing files"
 # The export is an exact, known file set — copy those, drop nothing stale.
-for f in index.html app.js styles.css verdict.json favicon.svg .nojekyll; do
+for f in index.html app.js styles.css verdict.json favicon.png apple-touch-icon.png logo.png .nojekyll; do
   rm -f "$WORKTREE/$f"
   cp "$BUILD/$f" "$WORKTREE/$f"
 done
