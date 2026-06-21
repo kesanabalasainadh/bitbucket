@@ -104,14 +104,23 @@ python -m verdict.demo --asset BNB/USDT --tf 4h --trait balanced
 | `reference/legacy_nse/` | proven engine being ported (reference only) |
 | `CONTRACTS.md` · `ORCHESTRATION.md` | interfaces + the build plan |
 
-## Sponsor stack
-**CoinMarketCap Agent Hub** (signal layer) is the implemented sponsor-facing path. **Trust Wallet Agent
-Kit / BNB Chain / PancakeSwap execution is future work and is not claimed as working code.** Details in
-[`docs/API_REFERENCE.md`](docs/API_REFERENCE.md).
+## Sponsor stack (two implemented, honestly scoped)
+- **CoinMarketCap Agent Hub** — the signal layer. A CMC **Strategy Skill**
+  ([`skills/verdict-strategy/SKILL.md`](skills/verdict-strategy/SKILL.md)) built on the Agent Hub MCP
+  tools (quotes, technicals, global metrics, derivatives); live regime data (Fear & Greed → risk-off,
+  BTC-dominance → alt-headwind gate) flows on the live demo. → targets **Best Use of Agent Hub**.
+- **BNB AI Agent SDK** — VERDICT is a **registered on-chain agent** using **two** ERC-8004 surfaces: an
+  identity (agentId `1466`) and an on-chain **verdict attestation** via `set_metadata` (a keccak hash of
+  the canonical verdict). Both have real BSC-testnet transactions, gas-free via MegaFuel. Reproduce with
+  `python -m verdict.identity.register` / `python -m verdict.identity.attest`. → targets **Best Use of
+  BNB AI Agent SDK**.
+- **Trust Wallet Agent Kit / live execution** — **future work, not claimed as working code** (Track 1 scope).
+
+Details in [`docs/API_REFERENCE.md`](docs/API_REFERENCE.md).
 
 ## Status
-🚧 Hackathon build in progress (build lock: **2026-06-21 12:00 UTC**). See
-[`agents/README.md`](agents/README.md) for the live status board.
+✅ **Track-2 submission ready** — 126 tests green, reproducible offline (no key, no network), live demo up,
+on-chain identity + attestation verified. BNB Hack build window closes **2026-06-21 12:00 UTC**.
 
 ## License
 MIT
