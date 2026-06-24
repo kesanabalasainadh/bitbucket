@@ -53,7 +53,7 @@ from verdict.core import indicators as ind
 # SUPPORTED — the machine-readable surface WP-2 matches its candidate strings to.
 # --------------------------------------------------------------------------- #
 SUPPORTED: dict[str, list[str]] = {
-    "base_columns": ["close", "open", "high", "low", "volume"],
+    "base_columns": ["close", "open", "high", "low", "volume", "sentiment_score", "velocity", "shock", "news_volume"],
     "parametric_indicators": [
         "ema_<N>", "sma_<N>", "rsi_<N>", "atr_<N>", "adx_<N>",
         "donchian_high_<N>", "donchian_low_<N>", "vol_sma_<N>", "ema_slope_<N>",
@@ -103,7 +103,7 @@ def _compute_column(df: pd.DataFrame, token: str) -> pd.Series:
     Value at bar t depends only on bars <= t (ewm/rolling/shift), so memoizing
     the whole column is safe for no-lookahead.
     """
-    if token in ("close", "open", "high", "low", "volume"):
+    if token in ("close", "open", "high", "low", "volume", "sentiment_score", "velocity", "shock", "news_volume"):
         return df[token]
     if (m := _EMA.match(token)):
         return ind.ema(df["close"], int(m.group(1)))
